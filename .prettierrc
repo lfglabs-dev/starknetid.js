@@ -1,0 +1,13 @@
+{
+    "tabWidth": 2,
+    "useTabs": false,
+    "bracketSpacing": true,
+    "trailingComma": "all",
+    "singleQuote": false,
+    "bracketSameLine": true,
+    "semi": false,
+    "arrowParens": "always",
+    "proseWrap": "always",
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true
+  }

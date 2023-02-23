@@ -1,0 +1,42 @@
+{
+    "name": "starknetid.js",
+    "version": "0.0.1",
+    "keywords": [
+        "starknet",
+        "starknetid",
+        "starkware",
+        "l2",
+        "zk",
+        "identity",
+        "dapp"
+    ],
+    "description": "A typescript sdk built on top of starknetjs allowing to resolve domains and easily manipulate StarknetID data for a website.",
+    "license": "MIT",
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./dist/core.js",
+            "require": "./dist/core.umd.cjs"
+        }
+    },
+    "main": "./dist/core.umd.cjs",
+    "module": "./dist/core.js",
+    "types": "./dist/core.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite build --watch",
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "c8": "^7.13.0",
+        "happy-dom": "^8.7.1",
+        "starknet": "^4.22.0",
+        "typescript": "^4.9.5",
+        "vite": "^4.1.4",
+        "vite-plugin-dts": "^2.0.1",
+        "vitest": "^0.28.5"
+    }
+}
