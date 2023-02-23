@@ -10,15 +10,17 @@ importers:
       '@trivago/prettier-plugin-sort-imports': ^4.0.0
       husky: ^8.0.3
       lint-staged: ^13.1.2
+      prettier: ^2.8.4
       prettier-plugin-svelte: ^2.9.0
     devDependencies:
       '@changesets/cli': 2.26.0
       '@commitlint/cli': 17.4.4
       '@commitlint/config-conventional': 17.4.4
-      '@trivago/prettier-plugin-sort-imports': 4.0.0
+      '@trivago/prettier-plugin-sort-imports': 4.0.0_prettier@2.8.4
       husky: 8.0.3
       lint-staged: 13.1.2
-      prettier-plugin-svelte: 2.9.0
+      prettier: 2.8.4
+      prettier-plugin-svelte: 2.9.0_prettier@2.8.4
 
   example:
     specifiers:
@@ -1155,7 +1157,7 @@ packages:
       '@scure/base': 1.1.1
     dev: true
 
-  /@trivago/prettier-plugin-sort-imports/4.0.0:
+  /@trivago/prettier-plugin-sort-imports/4.0.0_prettier@2.8.4:
     resolution: {integrity: sha512-Tyuk5ZY4a0e2MNFLdluQO9F6d1awFQYXVVujEPFfvKPPXz8DADNHzz73NMhwCSXGSuGGZcA/rKOyZBrxVNMxaA==}
     peerDependencies:
       '@vue/compiler-sfc': 3.x
@@ -1168,6 +1170,7 @@ packages:
       '@babel/types': 7.17.0
       javascript-natural-sort: 0.7.1
       lodash: 4.17.21
+      prettier: 2.8.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3470,11 +3473,13 @@ packages:
       which-pm: 2.0.0
     dev: true
 
-  /prettier-plugin-svelte/2.9.0:
+  /prettier-plugin-svelte/2.9.0_prettier@2.8.4:
     resolution: {integrity: sha512-3doBi5NO4IVgaNPtwewvrgPpqAcvNv0NwJNflr76PIGgi9nf1oguQV1Hpdm9TI2ALIQVn/9iIwLpBO5UcD2Jiw==}
     peerDependencies:
       prettier: ^1.16.4 || ^2.0.0
       svelte: ^3.2.0
+    dependencies:
+      prettier: 2.8.4
     dev: true
 
   /prettier/2.8.4:
