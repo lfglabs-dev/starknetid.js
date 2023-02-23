@@ -17,7 +17,6 @@ pnpm dev
 
 and open `http://localhost:5173/`
 
-
 ### Running tests
 
 For running tests:
