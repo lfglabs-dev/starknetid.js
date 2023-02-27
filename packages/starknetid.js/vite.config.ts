@@ -1,7 +1,7 @@
 // vite.config.js
-import { resolve } from "path"
-import dts from "vite-plugin-dts"
-import { defineConfig } from "vitest/config"
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
   build: {
@@ -24,11 +24,4 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
-  test: {
-    environment: "happy-dom",
-    exclude: ["**/node_modules/**", "**/*.mock.ts"],
-    coverage: {
-      exclude: ["**/node_modules/**", "**/*.mock.ts"],
-    },
-  },
-})
+});
