@@ -5,7 +5,7 @@
     "trailingComma": "all",
     "singleQuote": false,
     "bracketSameLine": true,
-    "semi": false,
+    "semi": true,
     "arrowParens": "always",
     "proseWrap": "always",
     "importOrderSeparation": true,
