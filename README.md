@@ -1,5 +1,189 @@
 # Starknetid.js
 
+## Get started
+
+### Installation
+
+```
+# using npm
+npm install starknetid.js starknet@next
+
+# using yarn
+yarn install starknetid.js starknet@next
+```
+
+### Usage for dApp developers
+
+#### Basic usage
+
+Import `StarknetIdNavigator` from `starknetid.js` package to access functions.
+`StarknetIdNavigator` needs to be initialize with a provider.
+
+```
+import { StarknetIdNavigator } from 'starknetid.js'
+import { Provider } from 'starknet'
+
+const provider = new Provider();
+const starknetIdNavigator = new StarknetIdNavigator(provider);
+const addr = await starknetIdNavigator.getAddressFromStarkName('test.stark');
+```
+
+#### Using custom contracts
+
+It's possible to use starknetid.js with custom naming and identity contracts.
+
+```
+import { StarknetIdNavigator } from 'starknetid.js'
+
+const starknetIdNavigator = new StarknetIdNavigator(provider, {
+    naming: customNamingContract,
+    identity: customIdentityContract
+})
+```
+
+#### Using utils functions
+
+You can access utils function outside of the `StarknetIdNavigator` object
+through the `utils` namespace
+
+```
+import { utils } from 'starknetid.js'
+
+const encodedDomain = utils.encodeDomain('test.stark');
+```
+
+## SDK
+
+### Resolving domains
+
+**getAddressFromStarkName()**
+
+_StarknetIdNavigator.**getAddressFromStarkName**(domain: string) => string_
+
+Get address from Starkname.
+
+**getStarkName()**
+
+_StarknetIdNavigator.**getStarkName**(address: string) => string_
+
+Get Starkname from address.
+
+**getStarknetId()**
+
+_StarknetIdNavigator.**getStarknetId**(domain: string) => number_
+
+Get Starknet id from domain.
+
+### Resolving user data
+
+**getUserData()**
+
+_StarknetIdNavigator.**getUserData**(dOrDomain: number | string, field: string)
+=> string_
+
+Get user data from starknet id or domain.
+
+**getUserExtentedData()**
+
+_StarknetIdNavigator.**getUserExtentedData**(dOrDomain: number | string, field:
+string, length: number) => BN[]_
+
+Get user data from starknet id or domain. Use this function to retrieve an array
+knowing its size. It will return zeros if not written.
+
+**getUserUnboundedData()**
+
+_StarknetIdNavigator.**getUserUnboundedData**(dOrDomain: number | string, field:
+string) => BN[]_
+
+Get User unbounded data from starknet id or domain. Use this function to
+retrieve an array up to zero (not included).
+
+### Resolving verifier data
+
+**getVerifierData()**
+
+_StarknetIdNavigator.**getVerifierData**(dOrDomain: number | string, field:
+string, verifier?: string) => string_
+
+Get verifier data from starknet id or domain. If no verifier contract is
+provided, it will return the starknet.id verifier contract address deployed on
+the StarknetIdNavigator provider chain id.
+
+**getExtendedVerifierData()**
+
+_StarknetIdNavigator.**getExtendedVerifierData**(dOrDomain: number | string,
+field: string, length: number, verifier?: string) => BN[]_
+
+Get extended verifier data from starknet id or domain. Use this function to
+retrieve an array knowing its size. It will return zeros if not written. If no
+verifier contract is provided, it will return the starknet.id verifier contract
+address deployed on the StarknetIdNavigator provider chain id.
+
+**getUnboundedVerifierData()**
+
+_StarknetIdNavigator.**getUnboundedVerifierData**(dOrDomain: number | string,
+field: string, verifier?: string) => BN[]_
+
+Get User unbounded data from starknet id or domain. Use this function to
+retrieve an array up to zero (not included). If no verifier contract is
+provided, it will return the starknet.id verifier contract address deployed on
+the StarknetIdNavigator provider chain id.
+
+### Utils
+
+**isStarkDomain()**
+
+_utils.**isStarkDomain**(domain: string) => boolean_
+
+Check if domain is starknet.id domain
+
+**decodeDomain()**
+
+_utils.**decodeDomain**(encoded: bigint[]) => string_
+
+Decode starknetid domain '454245...' -> 'test.stark'
+
+**decode()**
+
+_utils.**decode**(felt: bigint) => string_
+
+Encode bigint into string
+
+**encodeDomain()**
+
+_utils.**encodeDomain**(domain: string) => bigint_
+
+Encode starknetid domain 'test.stark'.. -> '454245..'
+
+**encode()**
+
+_utils.**encode**(decoded: string) => bigint_
+
+Encode string into bigint
+
+**getStarknetIdNamingContract()**
+
+_utils.**getStarknetIdNamingContract**(chainId: StarknetChainId) => string_
+
+Get starknet.id naming contract address from chainId. If contract is not
+deployed will throw an error.
+
+**getStarknetIdentityContract()**
+
+_utils.**getStarknetIdentityContract**(chainId: StarknetChainId) => string_
+
+Get starknet.id identity contract address from chainId. If contract is not
+deployed will throw an error.
+
+**getStarknetIdVerifierContract()**
+
+_utils.**getStarknetIdVerifierContract**(chainId: StarknetChainId) => string_
+
+Get starknet.id verifier contract address from chainId. If contract is not
+deployed will throw an error. At the moment, starknet.id verifier contract only
+support `Discord`, `Twitter` and `Github` fields.
+
 ## Development
 
 You need Node and pnpm installed. Make sure to clone this repo and run:

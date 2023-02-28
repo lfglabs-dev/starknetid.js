@@ -104,6 +104,7 @@ export abstract class StarknetIdNavigatorInterface {
   /**
    * Get unbounded verifier data from starknet id or domain
    * Use this function to retrieve an array up to zero (not included).
+   * If no verifier is provided, it will use the starknet.id verifier contract address
    *
    * @param starknet id (number) | domain (string)
    * @param field
