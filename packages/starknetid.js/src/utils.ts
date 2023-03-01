@@ -151,7 +151,7 @@ export function encodeDomain(domain: string): bigint {
  * @param StarknetChainId
  * @returns string
  */
-export function getStarknetIdNamingContract(chainId: StarknetChainId): string {
+export function getNamingContract(chainId: StarknetChainId): string {
   const starknetIdMainnetContract =
     "0x6ac597f8116f886fa1c97a23fa4e08299975ecaf6b598873ca6792b9bbfb678";
   const starknetIdTestnetContract =
@@ -176,7 +176,7 @@ export function getStarknetIdNamingContract(chainId: StarknetChainId): string {
  * @param StarknetChainId
  * @returns string
  */
-export function getStarknetIdentityContract(chainId: StarknetChainId): string {
+export function getIdentityContract(chainId: StarknetChainId): string {
   const starknetIdMainnetContract =
     "0x05dbdedc203e92749e2e746e2d40a768d966bd243df04a6b712e222bc040a9af";
   const starknetIdTestnetContract =
@@ -202,9 +202,7 @@ export function getStarknetIdentityContract(chainId: StarknetChainId): string {
  * @param StarknetChainId
  * @returns string
  */
-export function getStarknetIdVerifierContract(
-  chainId: StarknetChainId,
-): string {
+export function getVerifierContract(chainId: StarknetChainId): string {
   const starknetIdMainnetContract =
     "0x0480258f58d43fb73936f803780047a0f6d0a563697d80bd3f95b603f9c8b1c8";
   const starknetIdTestnetContract =

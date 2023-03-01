@@ -79,21 +79,21 @@ Get Starknet id from domain.
 **getUserData()**
 
 _StarknetIdNavigator.**getUserData**(dOrDomain: number | string, field: string)
-=> string_
+=> BN_
 
 Get user data from starknet id or domain.
 
-**getUserExtentedData()**
+**getExtentedUserData()**
 
-_StarknetIdNavigator.**getUserExtentedData**(dOrDomain: number | string, field:
+_StarknetIdNavigator.**getExtentedUserData**(dOrDomain: number | string, field:
 string, length: number) => BN[]_
 
 Get user data from starknet id or domain. Use this function to retrieve an array
 knowing its size. It will return zeros if not written.
 
-**getUserUnboundedData()**
+**getUnboundedUserData()**
 
-_StarknetIdNavigator.**getUserUnboundedData**(dOrDomain: number | string, field:
+_StarknetIdNavigator.**getUnboundedUserData**(dOrDomain: number | string, field:
 string) => BN[]_
 
 Get User unbounded data from starknet id or domain. Use this function to
@@ -104,7 +104,7 @@ retrieve an array up to zero (not included).
 **getVerifierData()**
 
 _StarknetIdNavigator.**getVerifierData**(dOrDomain: number | string, field:
-string, verifier?: string) => string_
+string, verifier?: string) => BN_
 
 Get verifier data from starknet id or domain. If no verifier contract is
 provided, it will return the starknet.id verifier contract address deployed on
@@ -162,23 +162,23 @@ _utils.**encode**(decoded: string) => bigint_
 
 Encode string into bigint
 
-**getStarknetIdNamingContract()**
+**getNamingContract()**
 
-_utils.**getStarknetIdNamingContract**(chainId: StarknetChainId) => string_
+_utils.**getNamingContract**(chainId: StarknetChainId) => string_
 
 Get starknet.id naming contract address from chainId. If contract is not
 deployed will throw an error.
 
-**getStarknetIdentityContract()**
+**getIdentityContract()**
 
-_utils.**getStarknetIdentityContract**(chainId: StarknetChainId) => string_
+_utils.**getIdentityContract**(chainId: StarknetChainId) => string_
 
 Get starknet.id identity contract address from chainId. If contract is not
 deployed will throw an error.
 
-**getStarknetIdVerifierContract()**
+**getVerifierContract()**
 
-_utils.**getStarknetIdVerifierContract**(chainId: StarknetChainId) => string_
+_utils.**getVerifierContract**(chainId: StarknetChainId) => string_
 
 Get starknet.id verifier contract address from chainId. If contract is not
 deployed will throw an error. At the moment, starknet.id verifier contract only

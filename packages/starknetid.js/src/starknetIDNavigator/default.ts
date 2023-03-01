@@ -3,9 +3,9 @@ import { ProviderInterface, shortString, stark, number } from "starknet";
 import {
   decodeDomain,
   encodeDomain,
-  getStarknetIdNamingContract,
-  getStarknetIdentityContract,
-  getStarknetIdVerifierContract,
+  getNamingContract,
+  getIdentityContract,
+  getVerifierContract,
   isStarkDomain,
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
@@ -29,7 +29,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getAddressFromStarkName(domain: string): Promise<string> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.naming ?? getStarknetIdNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
       const addressData = await this.provider.callContract({
@@ -48,7 +48,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getStarkName(address: string): Promise<string> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.naming ?? getStarknetIdNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
       const hexDomain = await this.provider.callContract({
@@ -80,7 +80,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getStarknetId(domain: string): Promise<number> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.naming ?? getStarknetIdNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
       const starknetId = await this.provider.callContract({
@@ -102,10 +102,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUserData(
     idOrDomain: string | number,
     field: string,
-  ): Promise<string> {
+  ): Promise<BN> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {
@@ -117,7 +117,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           field: shortString.encodeShortString(field),
         }),
       });
-      return data.result[0];
+      return number.toBN(data.result[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -126,14 +126,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  public async getUserExtentedData(
+  public async getExtentedUserData(
     idOrDomain: number | string,
     field: string,
     length: number,
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {
@@ -161,13 +161,13 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  public async getUserUnboundedData(
+  public async getUnboundedUserData(
     idOrDomain: number | string,
     field: string,
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {
@@ -198,11 +198,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idOrDomain: number | string,
     field: string,
     verifier?: string,
-  ): Promise<string> {
+  ): Promise<BN> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
-    const verifierAddress = verifier ?? getStarknetIdVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+    const verifierAddress = verifier ?? getVerifierContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {
@@ -216,7 +216,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      return data.result[0];
+      return number.toBN(data.result[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -233,8 +233,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
-    const verifierAddress = verifier ?? getStarknetIdVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+    const verifierAddress = verifier ?? getVerifierContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {
@@ -270,8 +270,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
-      this.StarknetIdContract.identity ?? getStarknetIdentityContract(chainId);
-    const verifierAddress = verifier ?? getStarknetIdVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+    const verifierAddress = verifier ?? getVerifierContract(chainId);
     const id = await this.checkArguments(idOrDomain);
 
     try {

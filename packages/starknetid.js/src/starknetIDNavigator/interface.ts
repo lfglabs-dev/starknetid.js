@@ -35,7 +35,7 @@ export abstract class StarknetIdNavigatorInterface {
   public abstract getUserData(
     idOrDomain: number | string,
     field: string,
-  ): Promise<string>;
+  ): Promise<BN>;
 
   /**
    * Get user extended data from starknet id or domain
@@ -47,7 +47,7 @@ export abstract class StarknetIdNavigatorInterface {
    * @param length
    * @returns data as array of bigint
    */
-  public abstract getUserExtentedData(
+  public abstract getExtentedUserData(
     idOrDomain: number | string,
     field: string,
     length: number,
@@ -61,7 +61,7 @@ export abstract class StarknetIdNavigatorInterface {
    * @param field
    * @returns data as array of bigint
    */
-  public abstract getUserUnboundedData(
+  public abstract getUnboundedUserData(
     idOrDomain: number | string,
     field: string,
   ): Promise<BN[]>;
@@ -79,7 +79,7 @@ export abstract class StarknetIdNavigatorInterface {
     idOrDomain: number | string,
     field: string,
     verifier?: string,
-  ): Promise<string>;
+  ): Promise<BN>;
 
   /**
    * Get extended verifier data from starknet id or domain
