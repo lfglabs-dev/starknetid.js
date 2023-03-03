@@ -19,5 +19,5 @@
     "types": ["jest"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "__mocks__", "__test__"]
 }

@@ -13,20 +13,14 @@
   "description": "A typescript sdk built on top of starknetjs allowing to resolve domains and easily manipulate StarknetID data for a website.",
   "license": "MIT",
   "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/core.js",
-      "require": "./dist/core.umd.cjs"
-    }
-  },
-  "main": "./dist/core.umd.cjs",
-  "module": "./dist/core.js",
-  "types": "./dist/core.d.ts",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "tsc",
     "dev": "vite build --watch",
     "test": "jest -i"
   },
