@@ -216,7 +216,9 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(1, "discord");
-      expect(userData).toBe(shortString.encodeShortString("test"));
+      expect(userData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
     });
 
     test("getUserData from domain should succeed", async () => {
@@ -230,7 +232,9 @@ describe("test starknetid.js sdk", () => {
         "ben.stark",
         "discord",
       );
-      expect(userData).toBe(shortString.encodeShortString("test"));
+      expect(userData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
     });
 
     test("getUserExtentedData should return user extended data", async () => {
@@ -239,7 +243,7 @@ describe("test starknetid.js sdk", () => {
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userExtendedData = await starknetIdNavigator.getUserExtentedData(
+      const userExtendedData = await starknetIdNavigator.getExtentedUserData(
         1,
         "avatar",
         3,
@@ -262,7 +266,7 @@ describe("test starknetid.js sdk", () => {
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userExtendedData = await starknetIdNavigator.getUserUnboundedData(
+      const userExtendedData = await starknetIdNavigator.getUnboundedUserData(
         1,
         "avatar",
       );
@@ -295,7 +299,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(2, "discord");
-      expect(userData).toBe("0x0");
+      expect(userData).toStrictEqual(number.toBN("0x0"));
     });
 
     test("getUserExtentedData should succeed even with wrong lenth", async () => {
@@ -304,7 +308,7 @@ describe("test starknetid.js sdk", () => {
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userExtendedData = await starknetIdNavigator.getUserExtentedData(
+      const userExtendedData = await starknetIdNavigator.getExtentedUserData(
         1,
         "avatar",
         5,
@@ -331,7 +335,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(2, "field");
-      expect(userData).toBe("0x0");
+      expect(userData).toStrictEqual(number.toBN("0x0"));
     });
   });
 
@@ -377,7 +381,9 @@ describe("test starknetid.js sdk", () => {
         "discord",
         otherAccount.address,
       );
-      expect(userData).toBe(shortString.encodeShortString("test"));
+      expect(userData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
     });
 
     test("getVerifierData from domain should succeed", async () => {
@@ -392,7 +398,9 @@ describe("test starknetid.js sdk", () => {
         "discord",
         otherAccount.address,
       );
-      expect(verifierData).toBe(shortString.encodeShortString("test"));
+      expect(verifierData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
     });
 
     test("getVerifierExtendedData should succeed", async () => {
@@ -463,7 +471,7 @@ describe("test starknetid.js sdk", () => {
         1,
         "discord",
       );
-      expect(verifierData).toBe("0x0");
+      expect(verifierData).toStrictEqual(number.toBN("0x0"));
     });
 
     test("getVerifierData should return 0x0 when field in custom verifier contract does not exist", async () => {
@@ -477,7 +485,7 @@ describe("test starknetid.js sdk", () => {
         "field",
         otherAccount.address,
       );
-      expect(verifierData).toBe("0x0");
+      expect(verifierData).toStrictEqual(number.toBN("0x0"));
     });
 
     test("getVerifierData should return 0x0 when id does not exist", async () => {
@@ -491,7 +499,7 @@ describe("test starknetid.js sdk", () => {
         "discord",
         otherAccount.address,
       );
-      expect(verifierData).toBe("0x0");
+      expect(verifierData).toStrictEqual(number.toBN("0x0"));
     });
   });
 });
