@@ -12,7 +12,6 @@
   ],
   "description": "A typescript sdk built on top of starknetjs allowing to resolve domains and easily manipulate StarknetID data for a website.",
   "license": "MIT",
-  "type": "module",
   "source": "./src/index.ts",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
