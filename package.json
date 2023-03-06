@@ -1,7 +1,8 @@
 {
-  "name": "starknetid.js-monorepo",
-  "version": "1.0.0",
-  "private": true,
+  "name": "starknetid.js",
+  "version": "1.3.1",
+  "description": "JavaScript library for Starknet ID",
+  "private": false,
   "scripts": {
     "build": "pnpm run -r build",
     "dev": "pnpm run -r --parallel dev",
