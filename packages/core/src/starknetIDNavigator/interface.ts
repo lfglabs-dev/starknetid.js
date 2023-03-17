@@ -1,6 +1,10 @@
 import BN from "bn.js";
+import { ProviderInterface } from "starknet";
+import { StarknetIdContracts } from "~/types";
 
 export abstract class StarknetIdNavigatorInterface {
+  public abstract provider: ProviderInterface;
+  public abstract StarknetIdContract: StarknetIdContracts;
   /**
    * Get address from Starkname
    *
