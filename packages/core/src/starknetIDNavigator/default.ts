@@ -51,13 +51,13 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
-      console.log("calldata", stark.compileCalldata({ address }));
+      console.log("calldata", stark.compileCalldata({ address: address }));
       console.log("address", address);
       const hexDomain = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "address_to_domain",
         calldata: stark.compileCalldata({
-          address,
+          address: address,
         }),
       });
       console.log("hexDomain", hexDomain);
