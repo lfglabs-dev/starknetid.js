@@ -13,9 +13,9 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "core",
+      name: "index",
       // the proper extensions will be added
-      fileName: "core",
+      fileName: "index",
     },
   },
   plugins: [
