@@ -21,8 +21,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   ) {
     this.provider = provider;
     this.StarknetIdContract = starknetIdContract ?? {
-      identity: "",
-      naming: "",
+      identity: getIdentityContract(provider.chainId),
+      naming: getNamingContract(provider.chainId),
     };
   }
 
@@ -51,8 +51,6 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
-      console.log("calldata", stark.compileCalldata({ address: address }));
-      console.log("address", address);
       const hexDomain = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "address_to_domain",
@@ -60,13 +58,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           address: address,
         }),
       });
-      console.log("hexDomain", hexDomain);
       const decimalDomain = hexDomain.result
         .map((element) => BigInt(element))
         .slice(1);
-      console.log("decimalDomain", decimalDomain);
       const stringDomain = decodeDomain(decimalDomain);
-      console.log("stringDomain", stringDomain);
 
       if (!stringDomain) {
         throw new Error("Starkname not found");
