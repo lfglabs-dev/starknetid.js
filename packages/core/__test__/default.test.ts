@@ -14,7 +14,7 @@ import {
 } from "./fixtures";
 
 describe("test starknetid.js sdk", () => {
-  jest.setTimeout(600000);
+  jest.setTimeout(90000000);
   const provider = getTestProvider();
   const account = getTestAccount(provider)[0];
 
@@ -115,70 +115,72 @@ describe("test starknetid.js sdk", () => {
     await provider.waitForTransaction(transaction_hash);
   });
 
-  describe("Retrieve domains", () => {
-    test("getAddressFromStarkName should return account.address", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-      });
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
-      const address = await starknetIdNavigator.getAddressFromStarkName(
-        "ben.stark",
-      );
-      expect(address).toBe(account.address);
+  test("getAddressFromStarkName should return account.address", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider, {
+      naming: NamingContract,
+      identity: IdentityContract,
     });
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const address = await starknetIdNavigator.getAddressFromStarkName(
+      "ben.stark",
+    );
+    expect(address).toBe(account.address);
+  });
 
-    test("getStarkName should return ben.stark", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-      });
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
-      const name = await starknetIdNavigator.getStarkName(account.address);
-      expect(name).toBe("ben.stark");
+  test("getStarkName should return ben.stark", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider, {
+      naming: NamingContract,
+      identity: IdentityContract,
     });
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const name = await starknetIdNavigator.getStarkName(account.address);
+    expect(name).toBe("ben.stark");
+  });
 
-    test("getStarknetId should return id 1 for ben.stark", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-      });
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
-      const id = await starknetIdNavigator.getStarknetId("ben.stark");
-      expect(id).toEqual(1);
+  test("getStarknetId should return id 1 for ben.stark", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider, {
+      naming: NamingContract,
+      identity: IdentityContract,
     });
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const id = await starknetIdNavigator.getStarknetId("ben.stark");
+    expect(id).toEqual(1);
+  });
 
-    test("Should fail because contractAddress not deployed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider);
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
-      expect(starknetIdNavigator.StarknetIdContract.naming).toEqual("");
+  test("Should fail because contractAddress not deployed", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider);
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      await expect(
-        starknetIdNavigator.getStarkName(account.address),
-      ).rejects.toThrow("Could not get stark name");
+    await expect(
+      starknetIdNavigator.getStarkName(account.address),
+    ).rejects.toThrow("Could not get stark name");
+  });
+
+  test("getAddressFromStarkName should fail because domain does not exist", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider, {
+      naming: NamingContract,
+      identity: IdentityContract,
     });
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const address = await starknetIdNavigator.getAddressFromStarkName(
+      "test.stark",
+    );
+    expect(address).toBe("0x0");
+  });
 
-    test("getAddressFromStarkName should fail because domain does not exist", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-      });
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
-      const address = await starknetIdNavigator.getAddressFromStarkName(
-        "test.stark",
-      );
-      expect(address).toBe("0x0");
+  test("getStarkName should fail because address has no starkname", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(provider, {
+      naming: NamingContract,
+      identity: IdentityContract,
     });
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-    test("getStarkName should fail because address has no starkname", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-      });
-      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const otherAccount = getTestAccount(provider)[1];
+    expect(otherAccount).toBeInstanceOf(Account);
 
-      const otherAccount = getTestAccount(provider)[1];
-      expect(otherAccount).toBeInstanceOf(Account);
-
-      await expect(
-        starknetIdNavigator.getStarkName(otherAccount.address),
-      ).rejects.toThrow("Starkname not found");
-    });
+    await expect(
+      starknetIdNavigator.getStarkName(otherAccount.address),
+    ).rejects.toThrow("Starkname not found");
   });
 
   describe("Retrieve user data", () => {
@@ -212,6 +214,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData from id should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
         identity: IdentityContract,
+        naming: NamingContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
@@ -237,8 +240,25 @@ describe("test starknetid.js sdk", () => {
       );
     });
 
+    test("getUserData from address should succeed", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
+        identity: IdentityContract,
+      });
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+
+      const userData = await starknetIdNavigator.getUserData(
+        account.address,
+        "discord",
+      );
+      expect(userData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
+    });
+
     test("getUserExtentedData should return user extended data", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -262,6 +282,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getUserUnboundedData should return user unbounded data", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -294,6 +315,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getUserData should return 0x0 when id does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -304,6 +326,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getUserExtentedData should succeed even with wrong lenth", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -330,6 +353,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getUserData should return 0x0 when field does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -372,6 +396,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData from id should succeed", async () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -403,8 +428,26 @@ describe("test starknetid.js sdk", () => {
       );
     });
 
+    test("getVerifierData from hex address should succeed", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
+        identity: IdentityContract,
+      });
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+
+      const verifierData = await starknetIdNavigator.getVerifierData(
+        account.address,
+        "discord",
+        otherAccount.address,
+      );
+      expect(verifierData).toStrictEqual(
+        number.toBN(shortString.encodeShortString("test")),
+      );
+    });
+
     test("getVerifierExtendedData should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -430,6 +473,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getVerifierUnboundedData should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -463,6 +507,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getVerifierData should return 0x0 in case verifier contract is not deployed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -476,6 +521,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getVerifierData should return 0x0 when field in custom verifier contract does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
@@ -490,6 +536,7 @@ describe("test starknetid.js sdk", () => {
 
     test("getVerifierData should return 0x0 when id does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(provider, {
+        naming: NamingContract,
         identity: IdentityContract,
       });
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);

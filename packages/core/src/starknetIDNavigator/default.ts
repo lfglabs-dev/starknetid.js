@@ -1,5 +1,12 @@
 import BN from "bn.js";
-import { ProviderInterface, shortString, stark, number } from "starknet";
+import {
+  ProviderInterface,
+  shortString,
+  stark,
+  number,
+  validateChecksumAddress,
+  getChecksumAddress,
+} from "starknet";
 import {
   decodeDomain,
   encodeDomain,
@@ -99,13 +106,13 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUserData(
-    idOrDomain: string | number,
+    idDomainOrAddr: string | number,
     field: string,
   ): Promise<BN> {
     const chainId = await this.provider.getChainId();
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -126,14 +133,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getExtentedUserData(
-    idOrDomain: number | string,
+    idDomainOrAddr: number | string,
     field: string,
     length: number,
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -161,13 +168,13 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUnboundedUserData(
-    idOrDomain: number | string,
+    idDomainOrAddr: number | string,
     field: string,
   ): Promise<BN[]> {
     const chainId = await this.provider.getChainId();
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -194,7 +201,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getVerifierData(
-    idOrDomain: number | string,
+    idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
   ): Promise<BN> {
@@ -202,7 +209,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -225,7 +232,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getExtendedVerifierData(
-    idOrDomain: number | string,
+    idDomainOrAddr: number | string,
     field: string,
     length: number,
     verifier?: string,
@@ -234,7 +241,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -263,7 +270,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUnboundedVerifierData(
-    idOrDomain: number | string,
+    idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
   ): Promise<BN[]> {
@@ -271,7 +278,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);
-    const id = await this.checkArguments(idOrDomain);
+    const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
@@ -298,17 +305,30 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  private async checkArguments(idOrDomain: string | number): Promise<number> {
-    if (typeof idOrDomain === "number") {
-      return idOrDomain;
-    } else {
-      if (isStarkDomain(idOrDomain)) {
-        return this.getStarknetId(idOrDomain).then((id: number) => {
+  private async checkArguments(
+    idDomainOrAddr: string | number,
+  ): Promise<number> {
+    if (typeof idDomainOrAddr === "string") {
+      if (isStarkDomain(idDomainOrAddr)) {
+        return this.getStarknetId(idDomainOrAddr).then((id: number) => {
           return id;
         });
       } else {
-        throw new Error("Invalid domain name");
+        const checkSumAddr = getChecksumAddress(idDomainOrAddr);
+        if (validateChecksumAddress(checkSumAddr)) {
+          return this.getStarkName(idDomainOrAddr).then((name: string) => {
+            return this.getStarknetId(name).then((id: number) => {
+              return id;
+            });
+          });
+        } else {
+          throw new Error("Invalid idDomainOrAddr argument");
+        }
       }
+    } else if (typeof idDomainOrAddr === "number") {
+      return idDomainOrAddr;
+    } else {
+      throw new Error("Invalid idDomainOrAddr argument");
     }
   }
 }

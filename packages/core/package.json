@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "vite build --watch",
-    "test": "jest -i"
+    "test": "jest --verbose true --silent false -i"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
