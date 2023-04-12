@@ -162,6 +162,12 @@ _utils.**encode**(decoded: string) => bigint_
 
 Encode string into bigint
 
+**encodeSeveral()**
+
+_utils.**encodeSeveral**(domains: string[]) => string[]_
+
+Encode several domain. Useful for subdomains.
+
 **getNamingContract()**
 
 _utils.**getNamingContract**(chainId: StarknetChainId) => string_

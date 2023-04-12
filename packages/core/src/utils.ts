@@ -147,6 +147,20 @@ export function encodeDomain(domain: string): bigint {
 }
 
 /**
+ * Encode several domains
+ * @param string[]
+ * @returns string[]
+ */
+export function encodeSeveral(domains: string[]): string[] {
+  const encodedArray: string[] = [];
+
+  domains.forEach((domain) => {
+    encodedArray.push(encode(domain).toString(10));
+  });
+  return encodedArray;
+}
+
+/**
  * Get starknet.id naming contract address from chainId
  * @param StarknetChainId
  * @returns string
