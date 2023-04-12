@@ -161,6 +161,20 @@ export function encodeSeveral(domains: string[]): string[] {
 }
 
 /**
+ * Decode several domains
+ * @param bigint[][]
+ * @returns string[]
+ */
+export function decodeSeveral(domains: bigint[][]): string[] {
+  const encodedArray: string[] = [];
+
+  domains.forEach((domain) => {
+    encodedArray.push(decodeDomain(domain));
+  });
+  return encodedArray;
+}
+
+/**
  * Get starknet.id naming contract address from chainId
  * @param StarknetChainId
  * @returns string

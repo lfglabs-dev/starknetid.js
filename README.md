@@ -168,6 +168,12 @@ _utils.**encodeSeveral**(domains: string[]) => string[]_
 
 Encode several domain. Useful for subdomains.
 
+**decodeSeveral()**
+
+_utils.**decodeSeveral**(domains: bigint[][]) => string[]_
+
+Decode several domains.
+
 **getNamingContract()**
 
 _utils.**getNamingContract**(chainId: StarknetChainId) => string_
