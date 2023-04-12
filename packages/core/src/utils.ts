@@ -147,8 +147,9 @@ export function encodeDomain(domain: string): bigint[] {
     for (const subdomain of domain.replace(".stark", "").split("."))
       encoded.push(encode(subdomain));
     return encoded;
+  } else {
+    throw new Error("Domain is not a stark domain");
   }
-  throw new Error("Domain is not a stark domain");
 }
 
 /**

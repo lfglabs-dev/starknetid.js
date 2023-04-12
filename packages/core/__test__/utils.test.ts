@@ -1,4 +1,3 @@
-import BN from "bn.js";
 import { utils } from "../src/index";
 
 function generateString(length: number, characters: string): string {
