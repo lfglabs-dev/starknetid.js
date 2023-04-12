@@ -91,9 +91,13 @@ export function decodeDomain(encoded: bigint[]): string {
  * @param string
  * @returns bigint
  */
-export function encode(decoded: string): bigint {
+export function encode(decoded: string | undefined): bigint {
   let encoded = BigInt(0);
   let multiplier = BigInt(1);
+
+  if (!decoded) {
+    return encoded;
+  }
 
   if (decoded.endsWith(bigAlphabet[0] + basicAlphabet[1])) {
     const [str, k] = extractStars(decoded.substring(0, decoded.length - 2));

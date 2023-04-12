@@ -158,9 +158,9 @@ Encode starknetid domains and subdomains 'test.stark'.. -> '454245..'
 
 **encode()**
 
-_utils.**encode**(decoded: string) => bigint_
+_utils.**encode**(decoded: string | undefined) => bigint_
 
-Encode string into bigint
+Encode string into bigint. If string is undefined it will return BigInt(0).
 
 **encodeSeveral()**
 

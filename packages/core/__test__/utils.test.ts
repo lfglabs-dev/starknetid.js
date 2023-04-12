@@ -64,4 +64,8 @@ describe("Should test encoding/decoding hooks 2500 times", () => {
     const decoded = utils.decodeDomain([BigInt(1499554868251), BigInt(18925)]);
     expect(decoded).toBe("fricoben.ben.stark");
   });
+
+  it("Should test encode with an undefined domain", () => {
+    expect(utils.decode(utils.encode(undefined))).toBe("");
+  });
 });
