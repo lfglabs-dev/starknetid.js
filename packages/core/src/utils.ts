@@ -137,12 +137,17 @@ export function encode(decoded: string): bigint {
 }
 
 /**
- * Encode starknetid domain 'test.stark'.. -> '454245..'
+ * Encode starknetid domains and subdomains 'test.stark'.. -> '454245..'
  * @param string ending with '.stark'
- * @returns bigint
+ * @returns bigint[]
  */
-export function encodeDomain(domain: string): bigint {
-  if (isStarkDomain(domain)) return encode(domain.replace(".stark", ""));
+export function encodeDomain(domain: string): bigint[] {
+  if (isStarkDomain(domain) || isStarkDomain(domain + ".stark")) {
+    const encoded = [];
+    for (const subdomain of domain.replace(".stark", "").split("."))
+      encoded.push(encode(subdomain));
+    return encoded;
+  }
   throw new Error("Domain is not a stark domain");
 }
 

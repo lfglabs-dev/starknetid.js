@@ -39,11 +39,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
+      const encodedDomain = encodeDomain(domain).map((elem) =>
+        elem.toString(10),
+      );
       const addressData = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "domain_to_address",
         calldata: stark.compileCalldata({
-          domain: [encodeDomain(domain).toString(10)],
+          domain: encodedDomain,
         }),
       });
       return addressData.result[0];
@@ -89,11 +92,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
     try {
+      const encodedDomain = encodeDomain(domain).map((elem) =>
+        elem.toString(10),
+      );
       const starknetId = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "domain_to_token_id",
         calldata: stark.compileCalldata({
-          domain: [encodeDomain(domain).toString(10)],
+          domain: encodedDomain,
         }),
       });
       return Number(starknetId.result[0]);

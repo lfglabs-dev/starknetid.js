@@ -152,9 +152,9 @@ Encode bigint into string
 
 **encodeDomain()**
 
-_utils.**encodeDomain**(domain: string) => bigint_
+_utils.**encodeDomain**(domain: string) => bigint[]_
 
-Encode starknetid domain 'test.stark'.. -> '454245..'
+Encode starknetid domains and subdomains 'test.stark'.. -> '454245..'
 
 **encode()**
 
