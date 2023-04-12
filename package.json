@@ -1,6 +1,6 @@
 {
   "name": "starknetid.js",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "JavaScript library for Starknet ID",
   "private": false,
   "license": "MIT",

@@ -34,7 +34,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
@@ -53,7 +53,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getStarkName(address: string): Promise<string> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
@@ -84,7 +84,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getStarknetId(domain: string): Promise<number> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(chainId);
 
@@ -109,7 +109,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: string | number,
     field: string,
   ): Promise<BN> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idDomainOrAddr);
@@ -137,7 +137,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     field: string,
     length: number,
   ): Promise<BN[]> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idDomainOrAddr);
@@ -171,7 +171,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
   ): Promise<BN[]> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const id = await this.checkArguments(idDomainOrAddr);
@@ -205,7 +205,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     field: string,
     verifier?: string,
   ): Promise<BN> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);
@@ -237,7 +237,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     length: number,
     verifier?: string,
   ): Promise<BN[]> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);
@@ -274,7 +274,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     field: string,
     verifier?: string,
   ): Promise<BN[]> {
-    const chainId = await this.provider.getChainId();
+    const chainId = this.provider.chainId;
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(chainId);
     const verifierAddress = verifier ?? getVerifierContract(chainId);

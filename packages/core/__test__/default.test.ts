@@ -1,5 +1,5 @@
 import { Account, Contract, stark, number, shortString } from "starknet";
-import { StarknetIdNavigator } from "../src/starknetIDNavigator";
+import { StarknetIdNavigator } from "../src";
 import {
   compiledErc20,
   compiledNamingContract,
