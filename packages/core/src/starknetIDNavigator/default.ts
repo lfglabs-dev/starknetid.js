@@ -315,11 +315,16 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: string | number,
   ): Promise<number> {
     if (typeof idDomainOrAddr === "string") {
-      if (isStarkDomain(idDomainOrAddr)) {
+      if (/^[-+]?[0-9]+$/.test(idDomainOrAddr)) {
+        // is a number
+        return parseInt(idDomainOrAddr);
+      } else if (isStarkDomain(idDomainOrAddr)) {
+        // is a starkDomain
         return this.getStarknetId(idDomainOrAddr).then((id: number) => {
           return id;
         });
-      } else {
+      } else if (/^[-+]?0x[0-9a-f]+$/i.test(idDomainOrAddr)) {
+        // is a hex address
         const checkSumAddr = getChecksumAddress(idDomainOrAddr);
         if (validateChecksumAddress(checkSumAddr)) {
           return this.getStarkName(idDomainOrAddr).then((name: string) => {
@@ -328,8 +333,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
             });
           });
         } else {
-          throw new Error("Invalid idDomainOrAddr argument");
+          throw new Error("Invalid Starknet address");
         }
+      } else {
+        throw new Error("Invalid idDomainOrAddr argument");
       }
     } else if (typeof idDomainOrAddr === "number") {
       return idDomainOrAddr;
