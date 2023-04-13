@@ -142,37 +142,15 @@ Check if domain is starknet.id domain
 
 _utils.**decodeDomain**(encoded: bigint[]) => string_
 
-Decode starknetid domain '454245...' -> 'test.stark'
-
-**decode()**
-
-_utils.**decode**(felt: bigint) => string_
-
-Encode bigint into string
+Decode starknetid domain represented as an array of bigint `[454245]` ->
+`test.stark`
 
 **encodeDomain()**
 
-_utils.**encodeDomain**(domain: string) => bigint[]_
+_utils.**encodeDomain**(domain: string | undefined | null) => bigint[]_
 
-Encode starknetid domains and subdomains 'test.stark'.. -> '454245..'
-
-**encode()**
-
-_utils.**encode**(decoded: string | undefined) => bigint_
-
-Encode string into bigint. If string is undefined it will return BigInt(0).
-
-**encodeSeveral()**
-
-_utils.**encodeSeveral**(domains: string[]) => string[]_
-
-Encode several domain. Useful for subdomains.
-
-**decodeSeveral()**
-
-_utils.**decodeSeveral**(domains: bigint[][]) => string[]_
-
-Decode several domains.
+Encode starknetid domains and subdomains to an array bigint `test.stark` ->
+`[454245]`
 
 **getNamingContract()**
 
