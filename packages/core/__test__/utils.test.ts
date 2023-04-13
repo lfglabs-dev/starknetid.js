@@ -13,37 +13,47 @@ const basicAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789-";
 const bigAlphabet = "这来";
 const totalAlphabet = basicAlphabet + bigAlphabet;
 
-describe("Should test encoding/decoding hooks 2500 times", () => {
-  it("Should test encode and decode functions with a random string", () => {
+describe("Should test encodeDomain and decodeDomain 2500 times", () => {
+  it("Should test encodeDomain and decodeDomain functions with a random string", () => {
     for (let index = 0; index < 2500; index++) {
       const randomString = generateString(10, totalAlphabet);
-      expect(utils.decode(utils.encode(randomString))).toBe(randomString);
-    }
-  });
-
-  it("Should test decode and encode functions with a number", () => {
-    for (let index = 0; index < 2500; index++) {
-      const decoded = utils.decode(BigInt(index));
-      expect(utils.encode(decoded).toString()).toBe(index.toString());
-    }
-  });
-
-  it("Should test encode and decodeDomain functions with a random string", () => {
-    for (let index = 0; index < 2500; index++) {
-      const randomString = generateString(10, totalAlphabet);
-      expect(utils.decodeDomain([utils.encode(randomString)])).toBe(
+      expect(utils.decodeDomain(utils.encodeDomain(randomString))).toBe(
         randomString + ".stark",
       );
     }
   });
 
-  it("Should test encodeSeveral with subdomain", () => {
+  it("Should test decodeDomain functions with a number", () => {
+    for (let index = 0; index < 2500; index++) {
+      const decoded = utils.decodeDomain([BigInt(index)]);
+      expect(utils.encodeDomain(decoded).toString()).toBe(index.toString());
+    }
+  });
+
+  it("Should test encodeDomain and decodeDomain functions with a random string not ending with .stark", () => {
+    for (let index = 0; index < 2500; index++) {
+      const randomString = generateString(10, totalAlphabet);
+      expect(utils.decodeDomain(utils.encodeDomain(randomString))).toBe(
+        randomString + ".stark",
+      );
+    }
+  });
+
+  it("Should test encodeDomain and decodeDomain functions with a random string ending .stark", () => {
+    for (let index = 0; index < 2500; index++) {
+      const randomString = generateString(10, totalAlphabet);
+      expect(
+        utils.decodeDomain(utils.encodeDomain(randomString + ".stark")),
+      ).toBe(randomString + ".stark");
+    }
+  });
+
+  it("Should test encodeDomain with subdomain not ending with.stark", () => {
     for (let index = 0; index < 2500; index++) {
       const randomString = generateString(10, totalAlphabet);
       const randomString1 = generateString(10, totalAlphabet);
-      const encoded = utils
-        .encodeSeveral([randomString, randomString1])
-        .map((element) => BigInt(element));
+
+      const encoded = utils.encodeDomain(randomString + "." + randomString1);
 
       expect(utils.decodeDomain(encoded)).toBe(
         randomString + "." + randomString1 + ".stark",
@@ -51,21 +61,46 @@ describe("Should test encoding/decoding hooks 2500 times", () => {
     }
   });
 
-  it("Should test useDecoded and useEncoded hook with a number", () => {
+  it("Should test encodeDomain with subdomain ending with.stark", () => {
     for (let index = 0; index < 2500; index++) {
-      const decoded = utils.decodeDomain([BigInt(index)]);
-      expect(
-        utils.encode(decoded.substring(0, decoded.length - 6)).toString(),
-      ).toBe(index.toString());
+      const randomString = generateString(10, totalAlphabet);
+      const randomString1 = generateString(10, totalAlphabet);
+
+      const encoded = utils.encodeDomain(
+        randomString + "." + randomString1 + ".stark",
+      );
+
+      expect(utils.decodeDomain(encoded)).toBe(
+        randomString + "." + randomString1 + ".stark",
+      );
     }
   });
 
-  it("Should test useDecoded and useEncoded with a subdomain", () => {
+  it("Should test decodeDomain and encodeDomain functions with a number", () => {
+    for (let index = 0; index < 2500; index++) {
+      const decoded = utils.decodeDomain([BigInt(index)]);
+      expect(
+        utils.encodeDomain(decoded.substring(0, decoded.length - 6)).toString(),
+      ).toBe(index.toString());
+    }
+  });
+});
+
+describe("Should test encodeDomain and decodeDomain on special cases", () => {
+  it("Should test decodeDomain and encodeDomain with a subdomain", () => {
     const decoded = utils.decodeDomain([BigInt(1499554868251), BigInt(18925)]);
     expect(decoded).toBe("fricoben.ben.stark");
   });
 
-  it("Should test encode with an undefined domain", () => {
-    expect(utils.decode(utils.encode(undefined))).toBe("");
+  it("Should test encodeDomain with an undefined domain", () => {
+    expect(utils.decodeDomain(utils.encodeDomain(undefined))).toBe("");
+  });
+
+  it("Should test encodeDomain with a null domain", () => {
+    expect(utils.decodeDomain(utils.encodeDomain(null))).toBe("");
+  });
+
+  it("Should test encodeDomain with an empty domain", () => {
+    expect(utils.decodeDomain(utils.encodeDomain(""))).toBe("");
   });
 });
