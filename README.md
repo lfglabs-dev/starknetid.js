@@ -174,6 +174,24 @@ Get starknet.id verifier contract address from chainId. If contract is not
 deployed will throw an error. At the moment, starknet.id verifier contract only
 support `Discord`, `Twitter` and `Github` fields.
 
+**isSubdomain()**
+
+_utils.**isSubdomain**(domain: string | undefined) => boolean_
+
+Check if domain is a starknet.id subdomain
+
+**isBraavosSubdomain()**
+
+_utils.**isBraavosSubdomain**(domain: string | undefined) => boolean_
+
+Check if domain is a Braavos subdomain
+
+**isStarkRootDomain()**
+
+_utils.**isStarkRootDomain**(domain: string | undefined) => boolean_
+
+Check if domain is a starknet.id root domain
+
 ## Development
 
 You need Node and pnpm installed. Make sure to clone this repo and run:
