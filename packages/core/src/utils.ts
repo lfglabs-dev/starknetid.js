@@ -229,3 +229,34 @@ function encode(decoded: string | undefined): bigint {
 
   return encoded;
 }
+
+/**
+ * Check if domain is a subdomain
+ * @param string
+ * @returns boolean
+ */
+export function isSubdomain(domain: string | undefined): boolean {
+  if (!domain) return false;
+
+  return Boolean((domain.match(/\./g) || []).length > 1);
+}
+
+/**
+ * Check if domain is a Braavos subdomain
+ * @param string
+ * @returns boolean
+ */
+export function isBraavosSubdomain(domain: string | undefined): boolean {
+  if (!domain) return false;
+
+  return /^([a-z0-9-]){1,48}\.braavos.stark$/.test(domain);
+}
+
+/**
+ * Check if domain is a root domain
+ * @param string
+ * @returns boolean
+ */
+export function isStarkRootDomain(domain: string): boolean {
+  return /^([a-z0-9-]){1,48}\.stark$/.test(domain);
+}
