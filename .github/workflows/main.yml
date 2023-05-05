@@ -23,11 +23,16 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 19.4.0
-      - uses: pnpm/action-setup@v2.2.2
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
         with:
-          version: 7.1.7
-      - name: Install dependencies
-        run: pnpm install
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+      - name: Install pnpm
+        run: |
+          npm install -g pnpm
       - name: Print project structure
         run: |
           ls -R
