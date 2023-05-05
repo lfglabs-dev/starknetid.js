@@ -33,6 +33,8 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
+      - name: Run install
+        run: pnpm install
       - name: Print project structure
         run: |
           ls -R
