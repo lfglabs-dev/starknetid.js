@@ -192,6 +192,12 @@ _utils.**isStarkRootDomain**(domain: string | undefined) => boolean_
 
 Check if domain is a starknet.id root domain
 
+**isXplorerSubdomain()**
+
+_utils.**isXplorerSubdomain**(domain: string | undefined) => boolean_
+
+Check if domain is a Xplorer subdomain
+
 ## Development
 
 You need Node and pnpm installed. Make sure to clone this repo and run:
