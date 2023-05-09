@@ -260,3 +260,14 @@ export function isBraavosSubdomain(domain: string | undefined): boolean {
 export function isStarkRootDomain(domain: string): boolean {
   return /^([a-z0-9-]){1,48}\.stark$/.test(domain);
 }
+
+/**
+ * Check if domain is a Xplorer subdomain
+ * @param string
+ * @returns boolean
+ */
+export function isXplorerSubdomain(domain: string | undefined): boolean {
+  if (!domain) return false;
+
+  return /^([a-z0-9-]){1,48}\.xplorer.stark$/.test(domain);
+}
