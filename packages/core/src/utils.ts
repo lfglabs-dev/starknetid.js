@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { StarknetChainId, ZERO } from "./constants";
+import { constants } from "starknet";
+import { ZERO } from "./constants";
 
 const basicAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789-";
 const basicSizePlusOne = BigInt(basicAlphabet.length + 1);
@@ -58,17 +59,17 @@ export function encodeDomain(domain: string | undefined | null): bigint[] {
  * @param StarknetChainId
  * @returns string
  */
-export function getNamingContract(chainId: StarknetChainId): string {
+export function getNamingContract(chainId: constants.StarknetChainId): string {
   const starknetIdMainnetContract =
     "0x6ac597f8116f886fa1c97a23fa4e08299975ecaf6b598873ca6792b9bbfb678";
   const starknetIdTestnetContract =
     "0x3bab268e932d2cecd1946f100ae67ce3dff9fd234119ea2f6da57d16d29fce";
 
   switch (chainId) {
-    case StarknetChainId.MAINNET:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.TESTNET:
+    case constants.StarknetChainId.SN_GOERLI:
       return starknetIdTestnetContract;
 
     default:
@@ -83,17 +84,19 @@ export function getNamingContract(chainId: StarknetChainId): string {
  * @param StarknetChainId
  * @returns string
  */
-export function getIdentityContract(chainId: StarknetChainId): string {
+export function getIdentityContract(
+  chainId: constants.StarknetChainId,
+): string {
   const starknetIdMainnetContract =
     "0x05dbdedc203e92749e2e746e2d40a768d966bd243df04a6b712e222bc040a9af";
   const starknetIdTestnetContract =
     "0x0783a9097b26eae0586373b2ce0ed3529ddc44069d1e0fbc4f66d42b69d6850d";
 
   switch (chainId) {
-    case StarknetChainId.MAINNET:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.TESTNET:
+    case constants.StarknetChainId.SN_GOERLI:
       return starknetIdTestnetContract;
 
     default:
@@ -109,17 +112,19 @@ export function getIdentityContract(chainId: StarknetChainId): string {
  * @param StarknetChainId
  * @returns string
  */
-export function getVerifierContract(chainId: StarknetChainId): string {
+export function getVerifierContract(
+  chainId: constants.StarknetChainId,
+): string {
   const starknetIdMainnetContract =
     "0x0480258f58d43fb73936f803780047a0f6d0a563697d80bd3f95b603f9c8b1c8";
   const starknetIdTestnetContract =
     "0x4d546c8d60cfd591557ac0613be5ceeb0ea6f797e7d11c0b5160d145fa3089f";
 
   switch (chainId) {
-    case StarknetChainId.MAINNET:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.TESTNET:
+    case constants.StarknetChainId.SN_GOERLI:
       return starknetIdTestnetContract;
 
     default:

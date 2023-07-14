@@ -1,11 +1,12 @@
-import BN from "bn.js";
+// import BN from "bn.js";
 import {
   ProviderInterface,
   shortString,
-  stark,
-  number,
+  num,
   validateChecksumAddress,
   getChecksumAddress,
+  constants,
+  CallData,
 } from "starknet";
 import {
   decodeDomain,
@@ -21,22 +22,24 @@ import { StarknetIdContracts } from "../types";
 export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public provider: ProviderInterface;
   public StarknetIdContract: StarknetIdContracts;
+  public chainId: constants.StarknetChainId;
 
   constructor(
     provider: ProviderInterface,
+    chainId: constants.StarknetChainId,
     starknetIdContract?: StarknetIdContracts,
   ) {
     this.provider = provider;
+    this.chainId = chainId;
     this.StarknetIdContract = starknetIdContract ?? {
-      identity: getIdentityContract(provider.chainId),
-      naming: getNamingContract(provider.chainId),
+      identity: getIdentityContract(chainId),
+      naming: getNamingContract(chainId),
     };
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
-    const chainId = this.provider.chainId;
     const contract =
-      this.StarknetIdContract.naming ?? getNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
       const encodedDomain = encodeDomain(domain).map((elem) =>
@@ -45,7 +48,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const addressData = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "domain_to_address",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           domain: encodedDomain,
         }),
       });
@@ -56,15 +59,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getStarkName(address: string): Promise<string> {
-    const chainId = this.provider.chainId;
     const contract =
-      this.StarknetIdContract.naming ?? getNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
       const hexDomain = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "address_to_domain",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           address: address,
         }),
       });
@@ -87,9 +89,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getStarknetId(domain: string): Promise<number> {
-    const chainId = this.provider.chainId;
     const contract =
-      this.StarknetIdContract.naming ?? getNamingContract(chainId);
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
       const encodedDomain = encodeDomain(domain).map((elem) =>
@@ -98,7 +99,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const starknetId = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "domain_to_token_id",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           domain: encodedDomain,
         }),
       });
@@ -114,22 +115,21 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUserData(
     idDomainOrAddr: string | number,
     field: string,
-  ): Promise<BN> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_user_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
         }),
       });
-      return number.toBN(data.result[0]);
+      return num.toBigInt(data.result[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -142,17 +142,16 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     length: number,
-  ): Promise<BN[]> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt[]> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_extended_user_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           length: length.toString(),
@@ -161,7 +160,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       data.result.shift();
       const res = data.result.map((element: string) => {
-        return number.toBN(element);
+        return num.toBigInt(element);
       });
 
       return res;
@@ -176,17 +175,16 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUnboundedUserData(
     idDomainOrAddr: number | string,
     field: string,
-  ): Promise<BN[]> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt[]> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_unbounded_user_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
         }),
@@ -194,7 +192,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       data.result.shift();
       const res = data.result.map((element: string) => {
-        return number.toBN(element);
+        return num.toBigInt(element);
       });
 
       return res;
@@ -210,25 +208,24 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
-  ): Promise<BN> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const verifierAddress = verifier ?? getVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const verifierAddress = verifier ?? getVerifierContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_verifier_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
         }),
       });
 
-      return number.toBN(data.result[0]);
+      return num.toBigInt(data.result[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -242,18 +239,17 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     field: string,
     length: number,
     verifier?: string,
-  ): Promise<BN[]> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt[]> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const verifierAddress = verifier ?? getVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const verifierAddress = verifier ?? getVerifierContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_extended_verifier_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           length: length.toString(),
@@ -263,7 +259,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       data.result.shift();
       const res = data.result.map((element: string) => {
-        return number.toBN(element);
+        return num.toBigInt(element);
       });
 
       return res;
@@ -279,18 +275,17 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
-  ): Promise<BN[]> {
-    const chainId = this.provider.chainId;
+  ): Promise<BigInt[]> {
     const contract =
-      this.StarknetIdContract.identity ?? getIdentityContract(chainId);
-    const verifierAddress = verifier ?? getVerifierContract(chainId);
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const verifierAddress = verifier ?? getVerifierContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
       const data = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "get_unbounded_verifier_data",
-        calldata: stark.compileCalldata({
+        calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
@@ -299,7 +294,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       data.result.shift();
       const res = data.result.map((element: string) => {
-        return number.toBN(element);
+        return num.toBigInt(element);
       });
 
       return res;

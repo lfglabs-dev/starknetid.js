@@ -1,10 +1,11 @@
-import BN from "bn.js";
-import { ProviderInterface } from "starknet";
+// import BN from "bn.js";
+import { ProviderInterface, constants } from "starknet";
 import { StarknetIdContracts } from "~/types";
 
 export abstract class StarknetIdNavigatorInterface {
   public abstract provider: ProviderInterface;
   public abstract StarknetIdContract: StarknetIdContracts;
+  public abstract chainId: constants.StarknetChainId;
   /**
    * Get address from Starkname
    *
@@ -39,7 +40,7 @@ export abstract class StarknetIdNavigatorInterface {
   public abstract getUserData(
     idDomainOrAddr: number | string,
     field: string,
-  ): Promise<BN>;
+  ): Promise<BigInt>;
 
   /**
    * Get user extended data from starknet id, domain or hexadecimal address
@@ -55,7 +56,7 @@ export abstract class StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     length: number,
-  ): Promise<BN[]>;
+  ): Promise<BigInt[]>;
 
   /**
    * Get User unbounded data from starknet id, domain or hexadecimal address
@@ -68,7 +69,7 @@ export abstract class StarknetIdNavigatorInterface {
   public abstract getUnboundedUserData(
     idDomainOrAddr: number | string,
     field: string,
-  ): Promise<BN[]>;
+  ): Promise<BigInt[]>;
 
   /**
    * Get verifier data from starknet id, domain or hexadecimal address
@@ -83,7 +84,7 @@ export abstract class StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
-  ): Promise<BN>;
+  ): Promise<BigInt>;
 
   /**
    * Get extended verifier data from starknet id, domain or hexadecimal address
@@ -103,7 +104,7 @@ export abstract class StarknetIdNavigatorInterface {
     field: string,
     length: number,
     verifier?: string,
-  ): Promise<BN[]>;
+  ): Promise<BigInt[]>;
 
   /**
    * Get unbounded verifier data from starknet id, domain or hexadecimal address
@@ -119,5 +120,5 @@ export abstract class StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     verifier?: string,
-  ): Promise<BN[]>;
+  ): Promise<BigInt[]>;
 }
