@@ -12,7 +12,7 @@ npm install starknetid.js starknet@next
 yarn install starknetid.js starknet@next
 ```
 
-Version `1.5.1` works with starknet.js `v5`. If you need to use starknet.js
+Version `1.5.2` works with starknet.js `v5`. If you need to use starknet.js
 `v4`, please use version `1.5.0` of `starknetid.js`.
 
 ### Usage for dApp developers

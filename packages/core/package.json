@@ -1,6 +1,6 @@
 {
   "name": "starknetid.js",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "keywords": [
     "starknet",
     "starknetid",
@@ -35,7 +35,7 @@
     "vite-plugin-dts": "^2.0.1"
   },
   "peerDependencies": {
-    "starknet": "^4.22.0"
+    "starknet": "^5.14.1"
   },
   "peerDependenciesMeta": {
     "starknet": {
