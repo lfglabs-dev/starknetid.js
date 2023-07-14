@@ -6,7 +6,6 @@ import {
   ProviderInterface,
   RpcProvider,
   SequencerProvider,
-  ec,
   json,
 } from "starknet";
 
@@ -97,7 +96,6 @@ export const DEVNET_ACCOUNTS = [
 
 export const getTestAccount = (provider: ProviderInterface) => {
   return DEVNET_ACCOUNTS.map(
-    ({ address, secret }) =>
-      new Account(provider, address, ec.getKeyPair(secret)),
+    ({ address, secret }) => new Account(provider, address, secret),
   );
 };
