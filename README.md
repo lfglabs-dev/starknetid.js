@@ -12,19 +12,22 @@ npm install starknetid.js starknet@next
 yarn install starknetid.js starknet@next
 ```
 
+Version `1.5.1` works with starknet.js `v5`. If you need to use starknet.js
+`v4`, please use version `1.5.0` of `starknetid.js`.
+
 ### Usage for dApp developers
 
 #### Basic usage
 
 Import `StarknetIdNavigator` from `starknetid.js` package to access functions.
-`StarknetIdNavigator` needs to be initialize with a provider.
+`StarknetIdNavigator` needs to be initialize with a provider and a chainId.
 
 ```
 import { StarknetIdNavigator } from 'starknetid.js'
-import { Provider } from 'starknet'
+import { Provider, constants } from 'starknet'
 
 const provider = new Provider();
-const starknetIdNavigator = new StarknetIdNavigator(provider);
+const starknetIdNavigator = new StarknetIdNavigator(provider, constants.StarknetChainId.SN_MAIN);
 const addr = await starknetIdNavigator.getAddressFromStarkName('test.stark');
 ```
 
@@ -35,10 +38,14 @@ It's possible to use starknetid.js with custom naming and identity contracts.
 ```
 import { StarknetIdNavigator } from 'starknetid.js'
 
-const starknetIdNavigator = new StarknetIdNavigator(provider, {
-    naming: customNamingContract,
-    identity: customIdentityContract
-})
+const starknetIdNavigator = new StarknetIdNavigator(
+    provider,
+    constants.StarknetChainId.SN_MAIN,
+    {
+        naming: customNamingContract,
+        identity: customIdentityContract
+    }
+)
 ```
 
 #### Using utils functions
