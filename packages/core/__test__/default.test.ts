@@ -1,4 +1,11 @@
-import { Account, Contract, stark, number, shortString } from "starknet";
+import {
+  Account,
+  Contract,
+  num,
+  shortString,
+  constants,
+  CallData,
+} from "starknet";
 import { StarknetIdNavigator } from "../src";
 import {
   compiledErc20,
@@ -26,24 +33,13 @@ describe("test starknetid.js sdk", () => {
   beforeAll(async () => {
     expect(account).toBeInstanceOf(Account);
 
-    const initialTk = { low: 1000, high: 0 };
-    const ERC20ConstructorCallData = stark.compileCalldata({
-      name: shortString.encodeShortString("Token"),
-      symbol: shortString.encodeShortString("ERC20"),
-      decimals: "18",
-      initial_supply: {
-        type: "struct",
-        low: initialTk.low,
-        high: initialTk.high,
-      },
-      recipient: account.address,
-      owner: account.address,
-    });
-
-    const declareDeploy = await account.declareDeploy({
+    const declareDeploy = await account.declareAndDeploy({
       contract: compiledErc20,
-      classHash: erc20ClassHash,
-      constructorCalldata: ERC20ConstructorCallData,
+      constructorCalldata: [
+        shortString.encodeShortString("Token"),
+        shortString.encodeShortString("ERC20"),
+        account.address,
+      ],
     });
 
     erc20Address = declareDeploy.deploy.contract_address;
@@ -55,26 +51,26 @@ describe("test starknetid.js sdk", () => {
     );
 
     // Deploy naming contract
-    const namingResponse = await account.declareDeploy({
+    const namingResponse = await account.declareAndDeploy({
       contract: compiledNamingContract,
-      classHash: namingClassHash,
     });
     NamingContract = namingResponse.deploy.contract_address;
+    console.log("NamingContract", NamingContract);
 
     // Deploy Identity contract
-    const idResponse = await account.declareDeploy({
+    const idResponse = await account.declareAndDeploy({
       contract: compiledStarknetId,
-      classHash: starknetIdClassHash,
     });
     IdentityContract = idResponse.deploy.contract_address;
+    console.log("IdentityContract", IdentityContract);
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareDeploy({
+    const pricingResponse = await account.declareAndDeploy({
       contract: compiledPricingContract,
-      classHash: pricingClassHash,
       constructorCalldata: [erc20Address],
     });
     const pricingContractAddress = pricingResponse.deploy.contract_address;
+    console.log("pricingContractAddress", pricingContractAddress);
 
     const { transaction_hash } = await account.execute([
       {
@@ -116,10 +112,14 @@ describe("test starknetid.js sdk", () => {
   });
 
   test("getAddressFromStarkName should return account.address", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider, {
-      naming: NamingContract,
-      identity: IdentityContract,
-    });
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const address = await starknetIdNavigator.getAddressFromStarkName(
       "ben.stark",
@@ -128,27 +128,38 @@ describe("test starknetid.js sdk", () => {
   });
 
   test("getStarkName should return ben.stark", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider, {
-      naming: NamingContract,
-      identity: IdentityContract,
-    });
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const name = await starknetIdNavigator.getStarkName(account.address);
     expect(name).toBe("ben.stark");
   });
 
   test("getStarknetId should return id 1 for ben.stark", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider, {
-      naming: NamingContract,
-      identity: IdentityContract,
-    });
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const id = await starknetIdNavigator.getStarknetId("ben.stark");
     expect(id).toEqual(1);
   });
 
   test("Should fail because contractAddress not deployed", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider);
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
     await expect(
@@ -157,10 +168,14 @@ describe("test starknetid.js sdk", () => {
   });
 
   test("getAddressFromStarkName should fail because domain does not exist", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider, {
-      naming: NamingContract,
-      identity: IdentityContract,
-    });
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const address = await starknetIdNavigator.getAddressFromStarkName(
       "test.stark",
@@ -169,10 +184,14 @@ describe("test starknetid.js sdk", () => {
   });
 
   test("getStarkName should fail because address has no starkname", async () => {
-    const starknetIdNavigator = new StarknetIdNavigator(provider, {
-      naming: NamingContract,
-      identity: IdentityContract,
-    });
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
     const otherAccount = getTestAccount(provider)[1];
@@ -212,23 +231,31 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("getUserData from id should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        identity: IdentityContract,
-        naming: NamingContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          identity: IdentityContract,
+          naming: NamingContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(1, "discord");
       expect(userData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getUserData from domain should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(
@@ -236,15 +263,19 @@ describe("test starknetid.js sdk", () => {
         "discord",
       );
       expect(userData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getUserData from address should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(
@@ -252,15 +283,19 @@ describe("test starknetid.js sdk", () => {
         "discord",
       );
       expect(userData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getUserExtentedData should return user extended data", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getExtentedUserData(
@@ -270,21 +305,25 @@ describe("test starknetid.js sdk", () => {
       );
 
       expect(userExtendedData[0]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("my")),
+        num.toBigInt(shortString.encodeShortString("my")),
       );
       expect(userExtendedData[1]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("avatar")),
+        num.toBigInt(shortString.encodeShortString("avatar")),
       );
       expect(userExtendedData[2]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("url")),
+        num.toBigInt(shortString.encodeShortString("url")),
       );
     });
 
     test("getUserUnboundedData should return user unbounded data", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getUnboundedUserData(
@@ -294,18 +333,21 @@ describe("test starknetid.js sdk", () => {
 
       expect(userExtendedData.length).toBe(3);
       expect(userExtendedData[0]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("my")),
+        num.toBigInt(shortString.encodeShortString("my")),
       );
       expect(userExtendedData[1]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("avatar")),
+        num.toBigInt(shortString.encodeShortString("avatar")),
       );
       expect(userExtendedData[2]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("url")),
+        num.toBigInt(shortString.encodeShortString("url")),
       );
     });
 
     test("Should fail because identity contract not deployed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider);
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
@@ -314,21 +356,29 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("getUserData should return 0x0 when id does not exist", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(2, "discord");
-      expect(userData).toStrictEqual(number.toBN("0x0"));
+      expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
 
     test("getUserExtentedData should succeed even with wrong lenth", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getExtentedUserData(
@@ -339,27 +389,31 @@ describe("test starknetid.js sdk", () => {
 
       expect(userExtendedData.length).toBe(5);
       expect(userExtendedData[0]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("my")),
+        num.toBigInt(shortString.encodeShortString("my")),
       );
       expect(userExtendedData[1]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("avatar")),
+        num.toBigInt(shortString.encodeShortString("avatar")),
       );
       expect(userExtendedData[2]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("url")),
+        num.toBigInt(shortString.encodeShortString("url")),
       );
-      expect(userExtendedData[3]).toStrictEqual(number.toBN(0));
-      expect(userExtendedData[4]).toStrictEqual(number.toBN(0));
+      expect(userExtendedData[3]).toStrictEqual(num.toBigInt(0));
+      expect(userExtendedData[4]).toStrictEqual(num.toBigInt(0));
     });
 
     test("getUserData should return 0x0 when field does not exist", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getUserData(2, "field");
-      expect(userData).toStrictEqual(number.toBN("0x0"));
+      expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
   });
 
@@ -395,10 +449,14 @@ describe("test starknetid.js sdk", () => {
 
     test("getVerifierData from id should succeed", async () => {
       expect(otherAccount).toBeInstanceOf(Account);
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getVerifierData(
@@ -407,15 +465,19 @@ describe("test starknetid.js sdk", () => {
         otherAccount.address,
       );
       expect(userData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getVerifierData from domain should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
@@ -424,15 +486,19 @@ describe("test starknetid.js sdk", () => {
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getVerifierData from hex address should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
@@ -441,15 +507,19 @@ describe("test starknetid.js sdk", () => {
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(
-        number.toBN(shortString.encodeShortString("test")),
+        num.toBigInt(shortString.encodeShortString("test")),
       );
     });
 
     test("getVerifierExtendedData should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const extendedData = await starknetIdNavigator.getExtendedVerifierData(
@@ -461,21 +531,25 @@ describe("test starknetid.js sdk", () => {
 
       expect(extendedData.length).toBe(3);
       expect(extendedData[0]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("my")),
+        num.toBigInt(shortString.encodeShortString("my")),
       );
       expect(extendedData[1]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("avatar")),
+        num.toBigInt(shortString.encodeShortString("avatar")),
       );
       expect(extendedData[2]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("url")),
+        num.toBigInt(shortString.encodeShortString("url")),
       );
     });
 
     test("getVerifierUnboundedData should succeed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const unboundedData = await starknetIdNavigator.getUnboundedVerifierData(
@@ -486,18 +560,21 @@ describe("test starknetid.js sdk", () => {
 
       expect(unboundedData.length).toBe(3);
       expect(unboundedData[0]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("my")),
+        num.toBigInt(shortString.encodeShortString("my")),
       );
       expect(unboundedData[1]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("avatar")),
+        num.toBigInt(shortString.encodeShortString("avatar")),
       );
       expect(unboundedData[2]).toStrictEqual(
-        number.toBN(shortString.encodeShortString("url")),
+        num.toBigInt(shortString.encodeShortString("url")),
       );
     });
 
     test("getVerifierData should fail because identity contract not deployed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider);
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
@@ -506,24 +583,32 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("getVerifierData should return 0x0 in case verifier contract is not deployed", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
         1,
         "discord",
       );
-      expect(verifierData).toStrictEqual(number.toBN("0x0"));
+      expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
     });
 
     test("getVerifierData should return 0x0 when field in custom verifier contract does not exist", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
@@ -531,14 +616,18 @@ describe("test starknetid.js sdk", () => {
         "field",
         otherAccount.address,
       );
-      expect(verifierData).toStrictEqual(number.toBN("0x0"));
+      expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
     });
 
     test("getVerifierData should return 0x0 when id does not exist", async () => {
-      const starknetIdNavigator = new StarknetIdNavigator(provider, {
-        naming: NamingContract,
-        identity: IdentityContract,
-      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
@@ -546,7 +635,7 @@ describe("test starknetid.js sdk", () => {
         "discord",
         otherAccount.address,
       );
-      expect(verifierData).toStrictEqual(number.toBN("0x0"));
+      expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
     });
   });
 });
