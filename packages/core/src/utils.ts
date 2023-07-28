@@ -118,7 +118,7 @@ export function getVerifierContract(
   const starknetIdMainnetContract =
     "0x0480258f58d43fb73936f803780047a0f6d0a563697d80bd3f95b603f9c8b1c8";
   const starknetIdTestnetContract =
-    "0x4d546c8d60cfd591557ac0613be5ceeb0ea6f797e7d11c0b5160d145fa3089f";
+    "0x019e5204152a72891bf8cd0bed8f03593fdb29ceacd14fca587be5d9fcf87c0e";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
