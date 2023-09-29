@@ -85,6 +85,15 @@ describe("test starknetid.js sdk", () => {
       },
       {
         contractAddress: IdentityContract,
+        entrypoint: "initializer",
+        calldata: [
+          account.address, // admin
+          "1",
+          "uri",
+        ],
+      },
+      {
+        contractAddress: IdentityContract,
         entrypoint: "mint",
         calldata: ["1"], // TokenId
       },
