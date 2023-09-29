@@ -35,11 +35,13 @@ export abstract class StarknetIdNavigatorInterface {
    *
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
+   * @param domain
    * @returns data as bigint
    */
   public abstract getUserData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
   ): Promise<BigInt>;
 
   /**
@@ -50,12 +52,14 @@ export abstract class StarknetIdNavigatorInterface {
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
    * @param length
+   * @param domain
    * @returns data as array of bigint
    */
   public abstract getExtentedUserData(
     idDomainOrAddr: number | string,
     field: string,
     length: number,
+    domain: number,
   ): Promise<BigInt[]>;
 
   /**
@@ -64,11 +68,13 @@ export abstract class StarknetIdNavigatorInterface {
    *
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
+   * @param domain
    * @returns data as array of bigint
    */
   public abstract getUnboundedUserData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
   ): Promise<BigInt[]>;
 
   /**
@@ -77,12 +83,14 @@ export abstract class StarknetIdNavigatorInterface {
    *
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
+   * @param domain
    * @param verifier contract address (optional)
    * @returns data as array of bigint
    */
   public abstract getVerifierData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt>;
 
@@ -96,6 +104,7 @@ export abstract class StarknetIdNavigatorInterface {
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
    * @param length
+   * @param domain
    * @param verifier contract address (optional)
    * @returns data as array of bigint
    */
@@ -103,6 +112,7 @@ export abstract class StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     length: number,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt[]>;
 
@@ -113,12 +123,14 @@ export abstract class StarknetIdNavigatorInterface {
    *
    * @param starknet id (number) | domain or hexadecimal address (string)
    * @param field
+   * @param domain
    * @param verifier contract address (optional)
    * @returns data as array of bigint
    */
   public abstract getUnboundedVerifierData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt[]>;
 }

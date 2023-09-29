@@ -1,4 +1,3 @@
-// import BN from "bn.js";
 import {
   ProviderInterface,
   shortString,
@@ -115,6 +114,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUserData(
     idDomainOrAddr: string | number,
     field: string,
+    domain: number,
   ): Promise<BigInt> {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
@@ -127,6 +127,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
+          domain: domain.toString(),
         }),
       });
       return num.toBigInt(data.result[0]);
@@ -142,6 +143,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     length: number,
+    domain: number,
   ): Promise<BigInt[]> {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
@@ -155,6 +157,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           length: length.toString(),
+          domain: domain.toString(),
         }),
       });
 
@@ -175,6 +178,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUnboundedUserData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
   ): Promise<BigInt[]> {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
@@ -187,6 +191,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
+          domain: domain.toString(),
         }),
       });
 
@@ -207,6 +212,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getVerifierData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt> {
     const contract =
@@ -222,6 +228,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
+          domain: domain.toString(),
         }),
       });
 
@@ -238,6 +245,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     idDomainOrAddr: number | string,
     field: string,
     length: number,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt[]> {
     const contract =
@@ -254,6 +262,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           field: shortString.encodeShortString(field),
           length: length.toString(),
           verifier_address: verifierAddress,
+          domain: domain.toString(),
         }),
       });
 
@@ -274,6 +283,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getUnboundedVerifierData(
     idDomainOrAddr: number | string,
     field: string,
+    domain: number,
     verifier?: string,
   ): Promise<BigInt[]> {
     const contract =
@@ -289,6 +299,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
+          domain: domain.toString(),
         }),
       });
 
