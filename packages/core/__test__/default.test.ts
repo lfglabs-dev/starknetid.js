@@ -1,23 +1,11 @@
-import {
-  Account,
-  Contract,
-  num,
-  shortString,
-  constants,
-  CallData,
-} from "starknet";
+import { Account, num, shortString, constants } from "starknet";
 import { StarknetIdNavigator } from "../src";
 import {
-  compiledErc20,
   compiledNamingContract,
   compiledPricingContract,
   compiledStarknetId,
-  erc20ClassHash,
   getTestAccount,
   getTestProvider,
-  namingClassHash,
-  pricingClassHash,
-  starknetIdClassHash,
 } from "./fixtures";
 
 describe("test starknetid.js sdk", () => {
@@ -25,37 +13,13 @@ describe("test starknetid.js sdk", () => {
   const provider = getTestProvider();
   const account = getTestAccount(provider)[0];
 
-  let erc20: Contract;
-  let erc20Address: string;
+  let erc20Address: string =
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
   let NamingContract: string;
   let IdentityContract: string;
 
   beforeAll(async () => {
     expect(account).toBeInstanceOf(Account);
-
-    const declareDeploy = await account.declareAndDeploy({
-      contract: compiledErc20,
-      constructorCalldata: [
-        shortString.encodeShortString("Token"),
-        shortString.encodeShortString("ERC20"),
-        account.address,
-      ],
-    });
-
-    erc20Address = declareDeploy.deploy.contract_address;
-    erc20 = new Contract(compiledErc20.abi, erc20Address, provider);
-
-    const { balance } = await erc20.balanceOf(account.address);
-    expect(BigInt(balance.low).toString()).toStrictEqual(
-      BigInt(1000).toString(),
-    );
-
-    // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingContract,
-    });
-    NamingContract = namingResponse.deploy.contract_address;
-    console.log("NamingContract", NamingContract);
 
     // Deploy Identity contract
     const idResponse = await account.declareAndDeploy({
@@ -72,6 +36,13 @@ describe("test starknetid.js sdk", () => {
     const pricingContractAddress = pricingResponse.deploy.contract_address;
     console.log("pricingContractAddress", pricingContractAddress);
 
+    // Deploy naming contract
+    const namingResponse = await account.declareAndDeploy({
+      contract: compiledNamingContract,
+    });
+    NamingContract = namingResponse.deploy.contract_address;
+    console.log("NamingContract", NamingContract);
+
     const { transaction_hash } = await account.execute([
       {
         contractAddress: NamingContract,
@@ -84,13 +55,9 @@ describe("test starknetid.js sdk", () => {
         ],
       },
       {
-        contractAddress: IdentityContract,
-        entrypoint: "initializer",
-        calldata: [
-          account.address, // admin
-          "1",
-          "uri",
-        ],
+        contractAddress: erc20Address,
+        entrypoint: "approve",
+        calldata: [NamingContract, 10000000000000, 0], // Price of domain
       },
       {
         contractAddress: IdentityContract,
@@ -106,6 +73,8 @@ describe("test starknetid.js sdk", () => {
           "365", // Expiry
           "0",
           account.address, // receiver_address
+          0,
+          0,
         ],
       },
       {
@@ -221,6 +190,7 @@ describe("test starknetid.js sdk", () => {
             "1",
             shortString.encodeShortString("discord"),
             shortString.encodeShortString("test"),
+            0,
           ],
         },
         {
@@ -233,6 +203,7 @@ describe("test starknetid.js sdk", () => {
             shortString.encodeShortString("my"), // value
             shortString.encodeShortString("avatar"),
             shortString.encodeShortString("url"),
+            0,
           ],
         },
       ]);
@@ -250,7 +221,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(1, "discord", 0);
+      const userData = await starknetIdNavigator.getUserData(1, "discord");
       expect(userData).toStrictEqual(
         num.toBigInt(shortString.encodeShortString("test")),
       );
@@ -270,7 +241,6 @@ describe("test starknetid.js sdk", () => {
       const userData = await starknetIdNavigator.getUserData(
         "ben.stark",
         "discord",
-        0,
       );
       expect(userData).toStrictEqual(
         num.toBigInt(shortString.encodeShortString("test")),
@@ -291,7 +261,6 @@ describe("test starknetid.js sdk", () => {
       const userData = await starknetIdNavigator.getUserData(
         account.address,
         "discord",
-        0,
       );
       expect(userData).toStrictEqual(
         num.toBigInt(shortString.encodeShortString("test")),
@@ -313,7 +282,6 @@ describe("test starknetid.js sdk", () => {
         1,
         "avatar",
         3,
-        0,
       );
 
       expect(userExtendedData[0]).toStrictEqual(
@@ -341,7 +309,6 @@ describe("test starknetid.js sdk", () => {
       const userExtendedData = await starknetIdNavigator.getUnboundedUserData(
         1,
         "avatar",
-        0,
       );
 
       expect(userExtendedData.length).toBe(3);
@@ -364,7 +331,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
-        starknetIdNavigator.getUserData(1, "discord", 0),
+        starknetIdNavigator.getUserData(1, "discord"),
       ).rejects.toThrow("Could not get user data from starknet id");
     });
 
@@ -379,7 +346,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(2, "discord", 0);
+      const userData = await starknetIdNavigator.getUserData(2, "discord");
       expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
 
@@ -398,7 +365,6 @@ describe("test starknetid.js sdk", () => {
         1,
         "avatar",
         5,
-        0,
       );
 
       expect(userExtendedData.length).toBe(5);
@@ -426,7 +392,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(2, "field", 0);
+      const userData = await starknetIdNavigator.getUserData(2, "field");
       expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
   });
@@ -443,6 +409,7 @@ describe("test starknetid.js sdk", () => {
             "1", // token_id
             shortString.encodeShortString("discord"), // field
             shortString.encodeShortString("test"), // value
+            0,
           ],
         },
         {
@@ -455,6 +422,7 @@ describe("test starknetid.js sdk", () => {
             shortString.encodeShortString("my"), // value
             shortString.encodeShortString("avatar"),
             shortString.encodeShortString("url"),
+            0,
           ],
         },
       ]);
@@ -476,7 +444,6 @@ describe("test starknetid.js sdk", () => {
       const userData = await starknetIdNavigator.getVerifierData(
         1,
         "discord",
-        0,
         otherAccount.address,
       );
       expect(userData).toStrictEqual(
@@ -498,7 +465,6 @@ describe("test starknetid.js sdk", () => {
       const verifierData = await starknetIdNavigator.getVerifierData(
         "ben.stark",
         "discord",
-        0,
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(
@@ -520,7 +486,6 @@ describe("test starknetid.js sdk", () => {
       const verifierData = await starknetIdNavigator.getVerifierData(
         account.address,
         "discord",
-        0,
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(
@@ -543,7 +508,6 @@ describe("test starknetid.js sdk", () => {
         1,
         "avatar",
         3,
-        0,
         otherAccount.address,
       );
 
@@ -573,7 +537,6 @@ describe("test starknetid.js sdk", () => {
       const unboundedData = await starknetIdNavigator.getUnboundedVerifierData(
         1,
         "avatar",
-        0,
         otherAccount.address,
       );
 
@@ -597,12 +560,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
-        starknetIdNavigator.getVerifierData(
-          1,
-          "discord",
-          0,
-          otherAccount.address,
-        ),
+        starknetIdNavigator.getVerifierData(1, "discord", otherAccount.address),
       ).rejects.toThrow("Could not get user verifier data from starknet id");
     });
 
@@ -620,7 +578,6 @@ describe("test starknetid.js sdk", () => {
       const verifierData = await starknetIdNavigator.getVerifierData(
         1,
         "discord",
-        0,
       );
       expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
     });
@@ -639,7 +596,6 @@ describe("test starknetid.js sdk", () => {
       const verifierData = await starknetIdNavigator.getVerifierData(
         1,
         "field",
-        0,
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
@@ -659,10 +615,98 @@ describe("test starknetid.js sdk", () => {
       const verifierData = await starknetIdNavigator.getVerifierData(
         2,
         "discord",
-        0,
         otherAccount.address,
       );
       expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
+    });
+  });
+
+  describe("Retrieve profile picture verifier data", () => {
+    const otherAccount = getTestAccount(provider)[1];
+
+    beforeAll(async () => {
+      const { transaction_hash } = await otherAccount.execute([
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_verifier_data",
+          calldata: [
+            "1", // token_id
+            shortString.encodeShortString("nft_pp_contract"), // field
+            123, // value
+            0,
+          ],
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_extended_verifier_data",
+          calldata: [
+            "1", // token_id
+            shortString.encodeShortString("nft_pp_id"), // field
+            "2", // length
+            456,
+            0,
+            0,
+          ],
+        },
+      ]);
+      await provider.waitForTransaction(transaction_hash);
+    });
+
+    test("getPpVerifierData from id should succeed", async () => {
+      expect(otherAccount).toBeInstanceOf(Account);
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+
+      const ppData = await starknetIdNavigator.getPpVerifierData(
+        1,
+        otherAccount.address,
+      );
+      expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
+    });
+
+    test("getPpVerifierData from domain should succeed", async () => {
+      expect(otherAccount).toBeInstanceOf(Account);
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+
+      const ppData = await starknetIdNavigator.getPpVerifierData(
+        "ben.stark",
+        otherAccount.address,
+      );
+      expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
+    });
+
+    test("getPpVerifierData from hex address should succeed", async () => {
+      expect(otherAccount).toBeInstanceOf(Account);
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+
+      const ppData = await starknetIdNavigator.getPpVerifierData(
+        account.address,
+        otherAccount.address,
+      );
+      expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
     });
   });
 });
