@@ -1,4 +1,3 @@
-// import BN from "bn.js";
 import {
   ProviderInterface,
   shortString,
@@ -15,6 +14,7 @@ import {
   getIdentityContract,
   getVerifierContract,
   isStarkDomain,
+  getPpVerifierContract,
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
 import { StarknetIdContracts } from "../types";
@@ -127,6 +127,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
+          domain: "0",
         }),
       });
       return num.toBigInt(data.result[0]);
@@ -155,6 +156,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           length: length.toString(),
+          domain: "0",
         }),
       });
 
@@ -187,6 +189,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
+          domain: "0",
         }),
       });
 
@@ -222,6 +225,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
+          domain: "0",
         }),
       });
 
@@ -254,6 +258,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           field: shortString.encodeShortString(field),
           length: length.toString(),
           verifier_address: verifierAddress,
+          domain: "0",
         }),
       });
 
@@ -289,6 +294,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString(field),
           verifier_address: verifierAddress,
+          domain: "0",
         }),
       });
 
@@ -298,6 +304,55 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       });
 
       return res;
+    } catch (e) {
+      if (e instanceof Error && e.message === "User not found") {
+        throw e;
+      }
+      throw Error("Could not get user verifier data from starknet id");
+    }
+  }
+
+  public async getPpVerifierData(
+    idDomainOrAddr: number | string,
+    verifier?: string,
+  ): Promise<BigInt[]> {
+    const contract =
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const ppVerifierAddress = verifier ?? getPpVerifierContract(this.chainId);
+    const id = await this.checkArguments(idDomainOrAddr);
+
+    try {
+      const nftContractData = await this.provider.callContract({
+        contractAddress: contract,
+        entrypoint: "get_verifier_data",
+        calldata: CallData.compile({
+          token_id: id.toString(),
+          field: shortString.encodeShortString("nft_pp_contract"),
+          verifier_address: ppVerifierAddress,
+          domain: "0", // for now we only support domain 0
+        }),
+      });
+      const nftContract = nftContractData.result.map((element: string) => {
+        return num.toBigInt(element);
+      });
+
+      const nftTokenData = await this.provider.callContract({
+        contractAddress: contract,
+        entrypoint: "get_extended_verifier_data",
+        calldata: CallData.compile({
+          token_id: id.toString(),
+          field: shortString.encodeShortString("nft_pp_id"),
+          length: 2,
+          verifier_address: ppVerifierAddress,
+          domain: "0", // for now we only support domain 0
+        }),
+      });
+      nftTokenData.result.shift();
+      const nftTokenId = nftTokenData.result.map((element: string) => {
+        return num.toBigInt(element);
+      });
+
+      return [BigInt(0), ...nftContract, ...nftTokenId];
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;

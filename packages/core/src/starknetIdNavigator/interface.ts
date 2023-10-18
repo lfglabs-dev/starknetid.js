@@ -121,4 +121,19 @@ export abstract class StarknetIdNavigatorInterface {
     field: string,
     verifier?: string,
   ): Promise<BigInt[]>;
+
+  /**
+   * Get profile picture verifier data from starknet id, domain or hexadecimal address
+   * Use this function to retrieve the contract address & token id of the NFT set as profile picture.
+   * If no verifier is provided, it will use the starknet.id profile picture verifier contract address
+   * If no NFT is set as profile picture, it will return zeros.
+   *
+   * @param starknet id (number) | domain or hexadecimal address (string)
+   * @param verifier contract address (optional)
+   * @returns [domain, contract address, token id low, tokenid high]
+   */
+  public abstract getPpVerifierData(
+    idDomainOrAddr: number | string,
+    verifier?: string,
+  ): Promise<BigInt[]>;
 }

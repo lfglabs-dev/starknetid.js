@@ -134,6 +134,31 @@ export function getVerifierContract(
   }
 }
 
+/**
+ * Get starknet.id profile picture verifier contract address from chainId
+ * @param StarknetChainId
+ * @returns string
+ */
+export function getPpVerifierContract(
+  chainId: constants.StarknetChainId,
+): string {
+  const starknetIdMainnetContract = "0x0";
+  const starknetIdTestnetContract = "0x0";
+
+  switch (chainId) {
+    case constants.StarknetChainId.SN_MAIN:
+      return starknetIdMainnetContract;
+
+    case constants.StarknetChainId.SN_GOERLI:
+      return starknetIdTestnetContract;
+
+    default:
+      throw new Error(
+        "Starknet.id profile picture verifier contract is not yet deployed on this network",
+      );
+  }
+}
+
 function extractStars(str: string): [string, number] {
   let k = 0;
   while (str.endsWith(bigAlphabet[bigAlphabet.length - 1])) {

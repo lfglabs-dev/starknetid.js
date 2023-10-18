@@ -3,6 +3,8 @@ import path from "path";
 import {
   Account,
   CompiledContract,
+  CompiledSierra,
+  CompiledSierraCasm,
   ProviderInterface,
   RpcProvider,
   SequencerProvider,
@@ -10,6 +12,20 @@ import {
 } from "starknet";
 
 const readContract = (name: string): CompiledContract =>
+  json.parse(
+    fs
+      .readFileSync(path.resolve(__dirname, `../__mocks__/${name}.json`))
+      .toString("ascii"),
+  );
+
+const readContractSierraCasm = (name: string): CompiledSierraCasm =>
+  json.parse(
+    fs
+      .readFileSync(path.resolve(__dirname, `../__mocks__/${name}.casm`))
+      .toString("ascii"),
+  );
+
+const readContractSierra = (name: string): CompiledSierra =>
   json.parse(
     fs
       .readFileSync(path.resolve(__dirname, `../__mocks__/${name}.json`))
@@ -29,6 +45,21 @@ export const namingClassHash =
   "0x0263b7bbcd2585ed5d8fb9c0cb2f058fddde7d47aab52adbfe765eacbb773264";
 export const pricingClassHash =
   "0x013b49affb16dd1ee272aeb5478510f0cff52364a5a0c28cdb44b7e02ed41355";
+
+export const compiledErc20Sierra = readContractSierra("erc20/erc20.sierra");
+export const compiledErc20SierraCasm = readContractSierraCasm("erc20/erc20");
+export const compiledIdentitySierra = readContractSierra(
+  "identity/identity.sierra",
+);
+export const compiledIdentitySierraCasm =
+  readContractSierraCasm("identity/identity");
+export const compiledPricingSierra = readContractSierra(
+  "pricing/pricing.sierra",
+);
+export const compiledPricingSierraCasm =
+  readContractSierraCasm("pricing/pricing");
+export const compiledNamingSierra = readContractSierra("naming/naming.sierra");
+export const compiledNamingSierraCasm = readContractSierraCasm("naming/naming");
 
 /* Default test config based on run `starknet-devnet --seed 0` */
 const DEFAULT_TEST_PROVIDER_SEQUENCER_URL = "http://127.0.0.1:5050/";
