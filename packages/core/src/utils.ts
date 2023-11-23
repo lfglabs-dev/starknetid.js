@@ -196,9 +196,10 @@ export function getPopVerifierContract(
 export function getMulticallContract(
   chainId: constants.StarknetChainId,
 ): string {
-  const starknetIdMainnetContract = "0x0";
+  const starknetIdMainnetContract =
+    "0x034ffb8f4452df7a613a0210824d6414dbadcddce6c6e19bf4ddc9e22ce5f970";
   const starknetIdTestnetContract =
-    "0x61e5950f7aeae5cb03589c394b6e759769731772135dc19406a88d4a9690a00";
+    "0x034ffb8f4452df7a613a0210824d6414dbadcddce6c6e19bf4ddc9e22ce5f970";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
