@@ -6,6 +6,10 @@ import {
   getChecksumAddress,
   constants,
   CallData,
+  hash,
+  CairoCustomEnum,
+  cairo,
+  Contract,
 } from "starknet";
 import {
   decodeDomain,
@@ -15,9 +19,11 @@ import {
   getVerifierContract,
   isStarkDomain,
   getPpVerifierContract,
+  getPopVerifierContract,
+  getMulticallContract,
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
-import { StarknetIdContracts } from "../types";
+import { StarkProfile, StarknetIdContracts } from "../types";
 
 export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public provider: ProviderInterface;
@@ -88,7 +94,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  public async getStarknetId(domain: string): Promise<number> {
+  public async getStarknetId(domain: string): Promise<string> {
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
@@ -103,7 +109,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           domain: encodedDomain,
         }),
       });
-      return Number(starknetId.result[0]);
+      return BigInt(starknetId.result[0]).toString();
     } catch (e) {
       if (e instanceof Error && e.message === "Starkname not found") {
         throw e;
@@ -113,7 +119,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUserData(
-    idDomainOrAddr: string | number,
+    idDomainOrAddr: string,
     field: string,
   ): Promise<BigInt> {
     const contract =
@@ -140,7 +146,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getExtentedUserData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     field: string,
     length: number,
   ): Promise<BigInt[]> {
@@ -175,7 +181,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUnboundedUserData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     field: string,
   ): Promise<BigInt[]> {
     const contract =
@@ -208,7 +214,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getVerifierData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     field: string,
     verifier?: string,
   ): Promise<BigInt> {
@@ -239,7 +245,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getExtendedVerifierData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     field: string,
     length: number,
     verifier?: string,
@@ -277,7 +283,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getUnboundedVerifierData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     field: string,
     verifier?: string,
   ): Promise<BigInt[]> {
@@ -313,7 +319,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getPpVerifierData(
-    idDomainOrAddr: number | string,
+    idDomainOrAddr: string,
     verifier?: string,
   ): Promise<BigInt[]> {
     const contract =
@@ -361,16 +367,197 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  private async checkArguments(
-    idDomainOrAddr: string | number,
-  ): Promise<number> {
+  public async getProfileData(
+    address: string,
+    verifier?: string,
+    pfp_verifier?: string,
+    pop_verifier?: string,
+  ): Promise<StarkProfile> {
+    const identityContract =
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const namingContract =
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
+    const verifierContract = verifier ?? getVerifierContract(this.chainId);
+    const pfpVerifierContract =
+      pfp_verifier ?? getPpVerifierContract(this.chainId);
+    const popVerifierContract =
+      pop_verifier ?? getPopVerifierContract(this.chainId);
+    const multicallAddress = getMulticallContract(this.chainId);
+
+    // We need our contract to know the abi,
+    // otherwise we have to hardcode all the values for each enums
+    const { abi: multicallAbi } = await this.provider.getClassAt(
+      multicallAddress,
+    );
+    const multicallContract = new Contract(
+      multicallAbi,
+      multicallAddress,
+      this.provider,
+    );
+
+    try {
+      const data = await multicallContract.call("aggregate", [
+        [
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(namingContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("address_to_domain"),
+            ),
+            calldata: [this.hardcoded(address)],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(namingContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("domain_to_token_id"),
+            ),
+            calldata: [this.arrayReference(0, 0)],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(shortString.encodeShortString("twitter")),
+              this.hardcoded(verifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(shortString.encodeShortString("github")),
+              this.hardcoded(verifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(shortString.encodeShortString("discord")),
+              this.hardcoded(verifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(
+                shortString.encodeShortString("proof_of_personhood"),
+              ),
+              this.hardcoded(popVerifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          // PFP
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(shortString.encodeShortString("nft_pp_contract")),
+              this.hardcoded(pfpVerifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_extended_verifier_data"),
+            ),
+            calldata: [
+              this.reference(1, 0),
+              this.hardcoded(shortString.encodeShortString("nft_pp_id")),
+              this.hardcoded("2"),
+              this.hardcoded(pfpVerifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.notEqual(6, 0, 0),
+            to: this.reference(6, 0),
+            selector: this.hardcoded(hash.getSelectorFromName("tokenURI")),
+            calldata: [this.reference(7, 1), this.reference(7, 2)],
+          },
+        ],
+      ]);
+
+      if (Array.isArray(data)) {
+        const name = decodeDomain(data[0].slice(1));
+
+        const twitter =
+          data[2][0] !== BigInt(0) ? data[2][0].toString() : undefined;
+        const github =
+          data[3][0] !== BigInt(0) ? data[3][0].toString() : undefined;
+        const discord =
+          data[4][0] !== BigInt(0) ? data[4][0].toString() : undefined;
+        const proofOfPersonhood = data[5][0] === BigInt(1) ? true : false;
+
+        const profilePictureMetadata =
+          data.length === 9
+            ? data[8]
+                .slice(1)
+                .map((val: BigInt) =>
+                  shortString.decodeShortString(val.toString()),
+                )
+                .join("")
+            : undefined;
+
+        // extract nft_image from profile data
+        const profilePicture = profilePictureMetadata
+          ? await this.fetchImageUrl(profilePictureMetadata)
+          : undefined;
+
+        return {
+          name,
+          twitter,
+          github,
+          discord,
+          proofOfPersonhood,
+          profilePicture,
+        };
+      } else {
+        throw Error("Error while calling aggregate function");
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        throw e;
+      }
+      throw Error("Could not get user profile data from address");
+    }
+  }
+
+  private async checkArguments(idDomainOrAddr: string): Promise<string> {
     if (typeof idDomainOrAddr === "string") {
-      if (/^[-+]?[0-9]+$/.test(idDomainOrAddr)) {
-        // is a number
-        return parseInt(idDomainOrAddr);
+      if (/^\d+$/.test(idDomainOrAddr)) {
+        // is a positive number
+        return idDomainOrAddr;
       } else if (isStarkDomain(idDomainOrAddr)) {
         // is a starkDomain
-        return this.getStarknetId(idDomainOrAddr).then((id: number) => {
+        return this.getStarknetId(idDomainOrAddr).then((id: string) => {
           return id;
         });
       } else if (/^[-+]?0x[0-9a-f]+$/i.test(idDomainOrAddr)) {
@@ -378,7 +565,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         const checkSumAddr = getChecksumAddress(idDomainOrAddr);
         if (validateChecksumAddress(checkSumAddr)) {
           return this.getStarkName(idDomainOrAddr).then((name: string) => {
-            return this.getStarknetId(name).then((id: number) => {
+            return this.getStarknetId(name).then((id: string) => {
               return id;
             });
           });
@@ -388,10 +575,60 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       } else {
         throw new Error("Invalid idDomainOrAddr argument");
       }
-    } else if (typeof idDomainOrAddr === "number") {
-      return idDomainOrAddr;
     } else {
       throw new Error("Invalid idDomainOrAddr argument");
+    }
+  }
+
+  private hardcoded = (arg: string | number): CairoCustomEnum => {
+    return new CairoCustomEnum({
+      Hardcoded: arg,
+    });
+  };
+
+  private reference = (call: number, pos: number): CairoCustomEnum => {
+    return new CairoCustomEnum({
+      Reference: cairo.tuple(call, pos),
+    });
+  };
+
+  private arrayReference = (call: number, pos: number): CairoCustomEnum => {
+    return new CairoCustomEnum({
+      ArrayReference: cairo.tuple(call, pos),
+    });
+  };
+
+  private staticExecution = () => {
+    return new CairoCustomEnum({
+      Static: {},
+    });
+  };
+
+  private notEqual = (call: number, pos: number, value: number) => {
+    return new CairoCustomEnum({
+      IfNotEqual: cairo.tuple(call, pos, value),
+    });
+  };
+
+  private async fetchImageUrl(url: string): Promise<string> {
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      // Check if the "image" key exists and is not null
+      if (data.image) {
+        return data.image;
+      } else {
+        return "Image is not set";
+      }
+    } catch (error) {
+      console.error("There was a problem fetching the image URL:", error);
+      return "Error fetching data";
     }
   }
 }

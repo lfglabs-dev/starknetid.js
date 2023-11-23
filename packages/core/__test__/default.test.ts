@@ -1,9 +1,10 @@
 import { Account, num, shortString, constants } from "starknet";
 import { StarknetIdNavigator } from "../src";
 import {
+  compiledIdentitySierra,
+  compiledIdentitySierraCasm,
   compiledNamingContract,
   compiledPricingContract,
-  compiledStarknetId,
   getTestAccount,
   getTestProvider,
 } from "./fixtures";
@@ -23,7 +24,9 @@ describe("test starknetid.js sdk", () => {
 
     // Deploy Identity contract
     const idResponse = await account.declareAndDeploy({
-      contract: compiledStarknetId,
+      contract: compiledIdentitySierra,
+      casm: compiledIdentitySierraCasm,
+      constructorCalldata: [account.address, 0],
     });
     IdentityContract = idResponse.deploy.contract_address;
     console.log("IdentityContract", IdentityContract);
@@ -130,7 +133,7 @@ describe("test starknetid.js sdk", () => {
     );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const id = await starknetIdNavigator.getStarknetId("ben.stark");
-    expect(id).toEqual(1);
+    expect(id).toEqual("1");
   });
 
   test("Should fail because contractAddress not deployed", async () => {
@@ -221,7 +224,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(1, "discord");
+      const userData = await starknetIdNavigator.getUserData("1", "discord");
       expect(userData).toStrictEqual(
         num.toBigInt(shortString.encodeShortString("test")),
       );
@@ -279,7 +282,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getExtentedUserData(
-        1,
+        "1",
         "avatar",
         3,
       );
@@ -307,7 +310,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getUnboundedUserData(
-        1,
+        "1",
         "avatar",
       );
 
@@ -331,7 +334,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
-        starknetIdNavigator.getUserData(1, "discord"),
+        starknetIdNavigator.getUserData("1", "discord"),
       ).rejects.toThrow("Could not get user data from starknet id");
     });
 
@@ -346,7 +349,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(2, "discord");
+      const userData = await starknetIdNavigator.getUserData("2", "discord");
       expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
 
@@ -362,7 +365,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userExtendedData = await starknetIdNavigator.getExtentedUserData(
-        1,
+        "1",
         "avatar",
         5,
       );
@@ -392,7 +395,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const userData = await starknetIdNavigator.getUserData(2, "field");
+      const userData = await starknetIdNavigator.getUserData("2", "field");
       expect(userData).toStrictEqual(num.toBigInt("0x0"));
     });
   });
@@ -442,7 +445,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const userData = await starknetIdNavigator.getVerifierData(
-        1,
+        "1",
         "discord",
         otherAccount.address,
       );
@@ -505,7 +508,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const extendedData = await starknetIdNavigator.getExtendedVerifierData(
-        1,
+        "1",
         "avatar",
         3,
         otherAccount.address,
@@ -535,7 +538,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const unboundedData = await starknetIdNavigator.getUnboundedVerifierData(
-        1,
+        "1",
         "avatar",
         otherAccount.address,
       );
@@ -560,7 +563,11 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       await expect(
-        starknetIdNavigator.getVerifierData(1, "discord", otherAccount.address),
+        starknetIdNavigator.getVerifierData(
+          "1",
+          "discord",
+          otherAccount.address,
+        ),
       ).rejects.toThrow("Could not get user verifier data from starknet id");
     });
 
@@ -576,7 +583,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
-        1,
+        "1",
         "discord",
       );
       expect(verifierData).toStrictEqual(num.toBigInt("0x0"));
@@ -594,7 +601,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
-        1,
+        "1",
         "field",
         otherAccount.address,
       );
@@ -613,7 +620,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const verifierData = await starknetIdNavigator.getVerifierData(
-        2,
+        "2",
         "discord",
         otherAccount.address,
       );
@@ -665,7 +672,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
       const ppData = await starknetIdNavigator.getPpVerifierData(
-        1,
+        "1",
         otherAccount.address,
       );
       expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
