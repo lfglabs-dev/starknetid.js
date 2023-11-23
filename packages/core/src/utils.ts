@@ -28,12 +28,8 @@ export function isStarkDomain(domain: string): boolean {
 export function decodeDomain(encoded: bigint[]): string {
   let decoded = "";
 
-  console.log("encoded", encoded);
-
   encoded.forEach((subdomain) => {
-    console.log("subdomain", subdomain);
     decoded += decode(subdomain);
-    console.log("decoded", decoded);
     if (decoded) decoded += ".";
   });
 
