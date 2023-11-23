@@ -28,8 +28,12 @@ export function isStarkDomain(domain: string): boolean {
 export function decodeDomain(encoded: bigint[]): string {
   let decoded = "";
 
+  console.log("encoded", encoded);
+
   encoded.forEach((subdomain) => {
+    console.log("subdomain", subdomain);
     decoded += decode(subdomain);
+    console.log("decoded", decoded);
     if (decoded) decoded += ".";
   });
 
@@ -142,8 +146,10 @@ export function getVerifierContract(
 export function getPpVerifierContract(
   chainId: constants.StarknetChainId,
 ): string {
-  const starknetIdMainnetContract = "0x0";
-  const starknetIdTestnetContract = "0x0";
+  const starknetIdMainnetContract =
+    "0x070aaa20ec4a46da57c932d9fd89ca5e6bb9ca3188d3df361a32306aff7d59c7";
+  const starknetIdTestnetContract =
+    "0x03cac3228b434259734ee0e4ff445f642206ea11adace7e4f45edd2596748698";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
@@ -155,6 +161,59 @@ export function getPpVerifierContract(
     default:
       throw new Error(
         "Starknet.id profile picture verifier contract is not yet deployed on this network",
+      );
+  }
+}
+
+/**
+ * Get starknet.id proof of personhood verifier contract address from chainId
+ * @param StarknetChainId
+ * @returns string
+ */
+export function getPopVerifierContract(
+  chainId: constants.StarknetChainId,
+): string {
+  const starknetIdMainnetContract =
+    "0x0293eb2ba9862f762bd3036586d5755a782bd22e6f5028320f1d0405fd47bff4";
+  const starknetIdTestnetContract =
+    "0x03528caf090179e337931ee669a5b0214041e1bae30d460ff07d2cea2c7a9106";
+
+  switch (chainId) {
+    case constants.StarknetChainId.SN_MAIN:
+      return starknetIdMainnetContract;
+
+    case constants.StarknetChainId.SN_GOERLI:
+      return starknetIdTestnetContract;
+
+    default:
+      throw new Error(
+        "Starknet.id proof of personhood verifier contract is not yet deployed on this network",
+      );
+  }
+}
+
+/**
+ * Get starknet.id multicall contract address from chainId
+ * @param StarknetChainId
+ * @returns string
+ */
+export function getMulticallContract(
+  chainId: constants.StarknetChainId,
+): string {
+  const starknetIdMainnetContract = "0x0";
+  const starknetIdTestnetContract =
+    "0x61e5950f7aeae5cb03589c394b6e759769731772135dc19406a88d4a9690a00";
+
+  switch (chainId) {
+    case constants.StarknetChainId.SN_MAIN:
+      return starknetIdMainnetContract;
+
+    case constants.StarknetChainId.SN_GOERLI:
+      return starknetIdTestnetContract;
+
+    default:
+      throw new Error(
+        "Starknet.id multicall contract is not yet deployed on this network",
       );
   }
 }
