@@ -139,7 +139,7 @@ export function getVerifierContract(
  * @param StarknetChainId
  * @returns string
  */
-export function getPpVerifierContract(
+export function getPfpVerifierContract(
   chainId: constants.StarknetChainId,
 ): string {
   const starknetIdMainnetContract =

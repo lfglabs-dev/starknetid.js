@@ -18,7 +18,7 @@ import {
   getIdentityContract,
   getVerifierContract,
   isStarkDomain,
-  getPpVerifierContract,
+  getPfpVerifierContract,
   getPopVerifierContract,
   getMulticallContract,
 } from "../utils";
@@ -318,13 +318,13 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
-  public async getPpVerifierData(
+  public async getPfpVerifierData(
     idDomainOrAddr: string,
     verifier?: string,
   ): Promise<BigInt[]> {
     const contract =
       this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
-    const ppVerifierAddress = verifier ?? getPpVerifierContract(this.chainId);
+    const pfpVerifierAddress = verifier ?? getPfpVerifierContract(this.chainId);
     const id = await this.checkArguments(idDomainOrAddr);
 
     try {
@@ -334,7 +334,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         calldata: CallData.compile({
           token_id: id.toString(),
           field: shortString.encodeShortString("nft_pp_contract"),
-          verifier_address: ppVerifierAddress,
+          verifier_address: pfpVerifierAddress,
           domain: "0", // for now we only support domain 0
         }),
       });
@@ -349,7 +349,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           token_id: id.toString(),
           field: shortString.encodeShortString("nft_pp_id"),
           length: 2,
-          verifier_address: ppVerifierAddress,
+          verifier_address: pfpVerifierAddress,
           domain: "0", // for now we only support domain 0
         }),
       });
@@ -380,7 +380,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
     const verifierContract = verifier ?? getVerifierContract(this.chainId);
     const pfpVerifierContract =
-      pfp_verifier ?? getPpVerifierContract(this.chainId);
+      pfp_verifier ?? getPfpVerifierContract(this.chainId);
     const popVerifierContract =
       pop_verifier ?? getPopVerifierContract(this.chainId);
     const multicallAddress = getMulticallContract(this.chainId);
