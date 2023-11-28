@@ -659,7 +659,7 @@ describe("test starknetid.js sdk", () => {
       await provider.waitForTransaction(transaction_hash);
     });
 
-    test("getPpVerifierData from id should succeed", async () => {
+    test("getPfpVerifierData from id should succeed", async () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
@@ -671,14 +671,14 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const ppData = await starknetIdNavigator.getPpVerifierData(
+      const ppData = await starknetIdNavigator.getPfpVerifierData(
         "1",
         otherAccount.address,
       );
       expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
     });
 
-    test("getPpVerifierData from domain should succeed", async () => {
+    test("getPfpVerifierData from domain should succeed", async () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
@@ -690,14 +690,14 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const ppData = await starknetIdNavigator.getPpVerifierData(
+      const ppData = await starknetIdNavigator.getPfpVerifierData(
         "ben.stark",
         otherAccount.address,
       );
       expect(ppData).toStrictEqual([0n, 123n, 456n, 0n]);
     });
 
-    test("getPpVerifierData from hex address should succeed", async () => {
+    test("getPfpVerifierData from hex address should succeed", async () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
@@ -709,7 +709,7 @@ describe("test starknetid.js sdk", () => {
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
-      const ppData = await starknetIdNavigator.getPpVerifierData(
+      const ppData = await starknetIdNavigator.getPfpVerifierData(
         account.address,
         otherAccount.address,
       );

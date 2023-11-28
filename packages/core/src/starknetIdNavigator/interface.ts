@@ -132,7 +132,7 @@ export abstract class StarknetIdNavigatorInterface {
    * @param verifier contract address (optional)
    * @returns [domain, contract address, token id low, tokenid high]
    */
-  public abstract getPpVerifierData(
+  public abstract getPfpVerifierData(
     idDomainOrAddr: string,
     verifier?: string,
   ): Promise<BigInt[]>;
