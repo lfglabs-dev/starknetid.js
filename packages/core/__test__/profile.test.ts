@@ -132,28 +132,6 @@ describe("test starknetid.js sdk", () => {
           0,
         ],
       },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "set_verifier_data",
-        calldata: [
-          "1", // token_id
-          shortString.encodeShortString("nft_pp_contract"), // field
-          NFTContract, // value
-          0,
-        ],
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "set_extended_verifier_data",
-        calldata: [
-          "1", // token_id
-          shortString.encodeShortString("nft_pp_id"), // field
-          "2", // length
-          1, // value
-          0,
-          0,
-        ],
-      },
     ]);
     await provider.waitForTransaction(transaction_hash2);
   });
@@ -172,6 +150,93 @@ describe("test starknetid.js sdk", () => {
       });
     });
 
+    test("getProfileData should return an undefined profile picture url", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profile = await starknetIdNavigator.getProfileData(
+        account.address,
+        false,
+        otherAccount.address,
+        otherAccount.address,
+        otherAccount.address,
+      );
+      const expectedProfile = {
+        name: "ben.stark",
+        twitter: undefined,
+        github: undefined,
+        discord: "123",
+        proofOfPersonhood: false,
+        profilePicture: undefined,
+      };
+      expect(profile).toStrictEqual(expectedProfile);
+    });
+
+    test("getProfileData should return an identicon url", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profile = await starknetIdNavigator.getProfileData(
+        account.address,
+        true,
+        otherAccount.address,
+        otherAccount.address,
+        otherAccount.address,
+      );
+      const expectedProfile = {
+        name: "ben.stark",
+        twitter: undefined,
+        github: undefined,
+        discord: "123",
+        proofOfPersonhood: false,
+        profilePicture: "https://starknet.id/api/identicons/1",
+      };
+      expect(profile).toStrictEqual(expectedProfile);
+    });
+  });
+
+  describe("getProfileData with nft profile picture", () => {
+    beforeAll(async () => {
+      // Add nft pp verifier data
+      const { transaction_hash } = await otherAccount.execute([
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_verifier_data",
+          calldata: [
+            "1", // token_id
+            shortString.encodeShortString("nft_pp_contract"), // field
+            NFTContract, // value
+            0,
+          ],
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_extended_verifier_data",
+          calldata: [
+            "1", // token_id
+            shortString.encodeShortString("nft_pp_id"), // field
+            "2", // length
+            1, // value
+            0,
+            0,
+          ],
+        },
+      ]);
+      await provider.waitForTransaction(transaction_hash);
+    });
+
     test("getProfileData should return the right values", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
@@ -184,6 +249,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
         account.address,
+        true,
         otherAccount.address,
         otherAccount.address,
         otherAccount.address,

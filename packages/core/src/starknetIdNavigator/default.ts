@@ -369,6 +369,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
   public async getProfileData(
     address: string,
+    useDefaultPfp: boolean = true,
     verifier?: string,
     pfp_verifier?: string,
     pop_verifier?: string,
@@ -529,6 +530,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         // extract nft_image from profile data
         const profilePicture = profilePictureMetadata
           ? await this.fetchImageUrl(profilePictureMetadata)
+          : useDefaultPfp
+          ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
           : undefined;
 
         return {

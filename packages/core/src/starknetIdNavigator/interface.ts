@@ -141,9 +141,10 @@ export abstract class StarknetIdNavigatorInterface {
    * Get user stark profile data from his address
    * Use this function to retrive starkname, profile picture url, social networks ids and proof of personhood verification status.
    * If no verifier is provided, it will use the starknet.id verifiers contract addresses
-   * If no NFT is set as profile picture, it will return zeros.
+   * If no NFT is set as profile picture it will return the starknetid pfp url for this address. To disable this behavior, set the useDefaultPfp parameter to false.
    *
    * @param address (string)
+   * @param useDefaultPfp boolean to return the default starknetid url if no profile picture is set (optional)
    * @param verifier contract address for social networks (optional)
    * @param pfp_verifier contract address for profile picture (optional)
    * @param pop_verifier contract address for proof of personhood (optional)
@@ -151,6 +152,7 @@ export abstract class StarknetIdNavigatorInterface {
    */
   public abstract getProfileData(
     address: string,
+    useDefaultPfp?: boolean,
     verifier?: string,
     pfp_verifier?: string,
     pop_verifier?: string,
