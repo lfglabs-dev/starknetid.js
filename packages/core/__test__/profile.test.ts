@@ -7,8 +7,10 @@ import {
   compiledIdentitySierraCasm,
   compiledMulticallSierra,
   compiledMulticallSierraCasm,
-  compiledNamingContract,
-  compiledPricingContract,
+  compiledNamingSierra,
+  compiledNamingSierraCasm,
+  compiledPricingSierra,
+  compiledPricingSierraCasm,
   getTestAccount,
   getTestProvider,
 } from "./fixtures";
@@ -42,14 +44,22 @@ describe("test starknetid.js sdk", () => {
 
     // Deploy pricing contract
     const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingContract,
+      contract: compiledPricingSierra,
+      casm: compiledPricingSierraCasm,
       constructorCalldata: [erc20Address],
     });
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
     const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingContract,
+      contract: compiledNamingSierra,
+      casm: compiledNamingSierraCasm,
+      constructorCalldata: [
+        IdentityContract,
+        pricingContractAddress,
+        0,
+        account.address,
+      ],
     });
     NamingContract = namingResponse.deploy.contract_address;
 

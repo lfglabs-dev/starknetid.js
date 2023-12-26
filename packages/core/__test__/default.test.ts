@@ -3,8 +3,10 @@ import { StarknetIdNavigator } from "../src";
 import {
   compiledIdentitySierra,
   compiledIdentitySierraCasm,
-  compiledNamingContract,
-  compiledPricingContract,
+  compiledNamingSierra,
+  compiledNamingSierraCasm,
+  compiledPricingSierra,
+  compiledPricingSierraCasm,
   getTestAccount,
   getTestProvider,
 } from "./fixtures";
@@ -28,68 +30,28 @@ describe("test starknetid.js sdk", () => {
       casm: compiledIdentitySierraCasm,
       constructorCalldata: [account.address, 0],
     });
-    IdentityContract = idResponse.deploy.contract_address;
-    console.log("IdentityContract", IdentityContract);
+    const identityContractAddress = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
     const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingContract,
+      contract: compiledPricingSierra,
+      casm: compiledPricingSierraCasm,
       constructorCalldata: [erc20Address],
     });
     const pricingContractAddress = pricingResponse.deploy.contract_address;
-    console.log("pricingContractAddress", pricingContractAddress);
 
     // Deploy naming contract
     const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingContract,
+      contract: compiledNamingSierra,
+      casm: compiledNamingSierraCasm,
+      constructorCalldata: [
+        identityContractAddress,
+        pricingContractAddress,
+        0,
+        account.address,
+      ],
     });
     NamingContract = namingResponse.deploy.contract_address;
-    console.log("NamingContract", NamingContract);
-
-    const { transaction_hash } = await account.execute([
-      {
-        contractAddress: NamingContract,
-        entrypoint: "initializer",
-        calldata: [
-          IdentityContract, // starknetid_contract_addr
-          pricingContractAddress, // pricing_contract_addr
-          account.address, // admin
-          "0", // l1_contract
-        ],
-      },
-      {
-        contractAddress: erc20Address,
-        entrypoint: "approve",
-        calldata: [NamingContract, 10000000000000, 0], // Price of domain
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "mint",
-        calldata: ["1"], // TokenId
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "buy",
-        calldata: [
-          "1", // Starknet id linked
-          "18925", // Domain encoded "ben"
-          "365", // Expiry
-          "0",
-          account.address, // receiver_address
-          0,
-          0,
-        ],
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "set_address_to_domain",
-        calldata: [
-          "1", // length
-          "18925", // Domain encoded "ben"
-        ],
-      },
-    ]);
-    await provider.waitForTransaction(transaction_hash);
   });
 
   test("getAddressFromStarkName should return account.address", async () => {
