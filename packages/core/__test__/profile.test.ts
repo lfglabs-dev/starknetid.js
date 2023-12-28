@@ -35,114 +35,137 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy({
-      contract: compiledIdentitySierra,
-      casm: compiledIdentitySierraCasm,
-      constructorCalldata: [account.address, 0],
-    });
+    const idResponse = await account.declareAndDeploy(
+      {
+        contract: compiledIdentitySierra,
+        casm: compiledIdentitySierraCasm,
+        constructorCalldata: [account.address, 0],
+      },
+      { maxFee: 1e18 },
+    );
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingSierra,
-      casm: compiledPricingSierraCasm,
-      constructorCalldata: [erc20Address],
-    });
+    const pricingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledPricingSierra,
+        casm: compiledPricingSierraCasm,
+        constructorCalldata: [erc20Address],
+      },
+      { maxFee: 1e18 },
+    );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingSierra,
-      casm: compiledNamingSierraCasm,
-      constructorCalldata: [
-        IdentityContract,
-        pricingContractAddress,
-        0,
-        account.address,
-      ],
-    });
+    const namingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledNamingSierra,
+        casm: compiledNamingSierraCasm,
+        constructorCalldata: [
+          IdentityContract,
+          pricingContractAddress,
+          0,
+          account.address,
+        ],
+      },
+      { maxFee: 1e18 },
+    );
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy multicall contract
-    const multicallResponse = await account.declareAndDeploy({
-      contract: compiledMulticallSierra,
-      casm: compiledMulticallSierraCasm,
-    });
+    const multicallResponse = await account.declareAndDeploy(
+      {
+        contract: compiledMulticallSierra,
+        casm: compiledMulticallSierraCasm,
+      },
+      { maxFee: 1e18 },
+    );
     MulticallContract = multicallResponse.deploy.contract_address;
 
     // Deploy erc721 contract
-    const erc721Response = await account.declareAndDeploy({
-      contract: compiledErc721Sierra,
-      casm: compiledErc721SierraCasm,
-      constructorCalldata: [
-        shortString.encodeShortString("NFT"),
-        shortString.encodeShortString("NFT"),
-        [
-          shortString.encodeShortString("https://goerli.api.starknet.qu"),
-          shortString.encodeShortString("est/quests/uri?level="),
+    const erc721Response = await account.declareAndDeploy(
+      {
+        contract: compiledErc721Sierra,
+        casm: compiledErc721SierraCasm,
+        constructorCalldata: [
+          shortString.encodeShortString("NFT"),
+          shortString.encodeShortString("NFT"),
+          [
+            shortString.encodeShortString("https://goerli.api.starknet.qu"),
+            shortString.encodeShortString("est/quests/uri?level="),
+          ],
         ],
-      ],
-    });
+      },
+      { maxFee: 1e18 },
+    );
     NFTContract = erc721Response.deploy.contract_address;
 
-    const { transaction_hash } = await account.execute([
-      {
-        contractAddress: NamingContract,
-        entrypoint: "initializer",
-        calldata: [
-          IdentityContract, // starknetid_contract_addr
-          pricingContractAddress, // pricing_contract_addr
-          account.address, // admin
-          "0", // l1_contract
-        ],
-      },
-      {
-        contractAddress: erc20Address,
-        entrypoint: "approve",
-        calldata: [NamingContract, 10000000000000, 0], // Price of domain
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "mint",
-        calldata: ["1"], // TokenId
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "buy",
-        calldata: [
-          "1", // Starknet id linked
-          "18925", // Domain encoded "ben"
-          "365", // Expiry
-          "0",
-          account.address, // receiver_address
-          0,
-          0,
-        ],
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "set_address_to_domain",
-        calldata: [
-          "1", // length
-          "18925", // Domain encoded "ben"
-        ],
-      },
-    ]);
+    const { transaction_hash } = await account.execute(
+      [
+        {
+          contractAddress: NamingContract,
+          entrypoint: "initializer",
+          calldata: [
+            IdentityContract, // starknetid_contract_addr
+            pricingContractAddress, // pricing_contract_addr
+            account.address, // admin
+            "0", // l1_contract
+          ],
+        },
+        {
+          contractAddress: erc20Address,
+          entrypoint: "approve",
+          calldata: [NamingContract, 10000000000000, 0], // Price of domain
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "mint",
+          calldata: ["1"], // TokenId
+        },
+        {
+          contractAddress: NamingContract,
+          entrypoint: "buy",
+          calldata: [
+            "1", // Starknet id linked
+            "18925", // Domain encoded "ben"
+            "365", // Expiry
+            "0",
+            account.address, // receiver_address
+            0,
+            0,
+          ],
+        },
+        {
+          contractAddress: NamingContract,
+          entrypoint: "set_address_to_domain",
+          calldata: [
+            "1", // length
+            "18925", // Domain encoded "ben"
+          ],
+        },
+      ],
+      undefined,
+      { maxFee: 1e18 },
+    );
     await provider.waitForTransaction(transaction_hash);
 
     // Add verifier data
-    const { transaction_hash: transaction_hash2 } = await otherAccount.execute([
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "set_verifier_data",
-        calldata: [
-          "1", // token_id
-          shortString.encodeShortString("discord"), // field
-          123, // value
-          0,
-        ],
-      },
-    ]);
+    const { transaction_hash: transaction_hash2 } = await otherAccount.execute(
+      [
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_verifier_data",
+          calldata: [
+            "1", // token_id
+            shortString.encodeShortString("discord"), // field
+            123, // value
+            0,
+          ],
+        },
+      ],
+      undefined,
+      { maxFee: 1e18 },
+    );
     await provider.waitForTransaction(transaction_hash2);
   });
 
@@ -220,30 +243,34 @@ describe("test starknetid.js sdk", () => {
   describe("getProfileData with nft profile picture", () => {
     beforeAll(async () => {
       // Add nft pp verifier data
-      const { transaction_hash } = await otherAccount.execute([
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("nft_pp_contract"), // field
-            NFTContract, // value
-            0,
-          ],
-        },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_extended_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("nft_pp_id"), // field
-            "2", // length
-            1, // value
-            0,
-            0,
-          ],
-        },
-      ]);
+      const { transaction_hash } = await otherAccount.execute(
+        [
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("nft_pp_contract"), // field
+              NFTContract, // value
+              0,
+            ],
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_extended_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("nft_pp_id"), // field
+              "2", // length
+              1, // value
+              0,
+              0,
+            ],
+          },
+        ],
+        undefined,
+        { maxFee: 1e18 },
+      );
       await provider.waitForTransaction(transaction_hash);
     });
 

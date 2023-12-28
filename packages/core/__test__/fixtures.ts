@@ -106,16 +106,18 @@ export const getTestProvider = (): ProviderInterface => {
 export const DEVNET_ACCOUNTS = [
   {
     address:
-      "0x13c0fc806e4f3d361882b696aaab73880feb03fd08f61352e0d799f9e29eddf",
-    secret: "0x495a0423ae0e212f2638a0c6967486ae",
+      "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+    secret: "0x71d7bb07b9a64f6f78ac4c816aff4da9",
   },
   {
-    address: "0x7b2980bb822ade41e9b3cc4c92d09afcfd04c82c4bd237a9a750d3846d05a1",
-    secret: "0x6eb5b96a617779e769f9e3517ebc70c5",
+    address:
+      "0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1",
+    secret: "0xe1406455b7d66b1690803be066cbe5e",
   },
   {
-    address: "0xc0cf7afba447a30213016e77f41e6c248b7ce35aa8a19995eb02c264ddbb78",
-    secret: "0x5a9187663b540e2d23ddffcd83411aa6",
+    address:
+      "0x49dfb8ce986e21d354ac93ea65e6a11f639c1934ea253e5ff14ca62eca0f38e",
+    secret: "0xa20a02f0ac53692d144b20cb371a60d7",
   },
 ];
 
