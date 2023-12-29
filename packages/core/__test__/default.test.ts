@@ -34,7 +34,6 @@ describe("test starknetid.js sdk", () => {
       { maxFee: 1e18 },
     );
     IdentityContract = idResponse.deploy.contract_address;
-    console.log("IdentityContract", IdentityContract);
 
     // Deploy pricing contract
     const pricingResponse = await account.declareAndDeploy(
@@ -62,15 +61,13 @@ describe("test starknetid.js sdk", () => {
       { maxFee: 1e18 },
     );
     NamingContract = namingResponse.deploy.contract_address;
-    console.log("NamingContract", NamingContract);
 
-    console.log("account", account);
     const { transaction_hash } = await account.execute(
       [
         {
           contractAddress: erc20Address,
           entrypoint: "approve",
-          calldata: [NamingContract, 10000000000000, 0], // Price of domain
+          calldata: [NamingContract, 0, 1], // Price of domain
         },
         {
           contractAddress: IdentityContract,
@@ -91,19 +88,15 @@ describe("test starknetid.js sdk", () => {
           ],
         },
         {
-          contractAddress: NamingContract,
-          entrypoint: "set_address_to_domain",
-          calldata: [
-            "1", // length
-            "18925", // Domain encoded "ben"
-          ],
+          contractAddress: IdentityContract,
+          entrypoint: "set_main_id",
+          calldata: ["1"],
         },
       ],
       undefined,
       { maxFee: 1e18 },
     );
     await provider.waitForTransaction(transaction_hash);
-    console.log("transaction_hash", transaction_hash);
   });
 
   test("getAddressFromStarkName should return account.address", async () => {
@@ -192,9 +185,10 @@ describe("test starknetid.js sdk", () => {
     const otherAccount = getTestAccount(provider)[1];
     expect(otherAccount).toBeInstanceOf(Account);
 
+    // here
     await expect(
       starknetIdNavigator.getStarkName(otherAccount.address),
-    ).rejects.toThrow("Starkname not found");
+    ).rejects.toThrow("Could not get stark name");
   });
 
   describe("Retrieve user data", () => {

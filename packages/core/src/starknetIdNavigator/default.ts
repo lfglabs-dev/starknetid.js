@@ -83,14 +83,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const stringDomain = decodeDomain(decimalDomain);
 
       if (!stringDomain) {
-        throw new Error("Starkname not found");
+        throw new Error("Could not get stark name");
       }
 
       return stringDomain;
     } catch (e) {
-      if (e instanceof Error && e.message === "Starkname not found") {
-        throw e;
-      }
       throw new Error("Could not get stark name");
     }
   }
@@ -112,7 +109,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       });
       return BigInt(starknetId.result[0]).toString();
     } catch (e) {
-      if (e instanceof Error && e.message === "Starkname not found") {
+      if (e instanceof Error && e.message === "Could not get stark name") {
         throw e;
       }
       throw new Error("Could not get starknet id from starkname");
