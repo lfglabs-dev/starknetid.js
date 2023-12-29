@@ -103,19 +103,9 @@ describe("test starknetid.js sdk", () => {
     const { transaction_hash } = await account.execute(
       [
         {
-          contractAddress: NamingContract,
-          entrypoint: "initializer",
-          calldata: [
-            IdentityContract, // starknetid_contract_addr
-            pricingContractAddress, // pricing_contract_addr
-            account.address, // admin
-            "0", // l1_contract
-          ],
-        },
-        {
           contractAddress: erc20Address,
           entrypoint: "approve",
-          calldata: [NamingContract, 10000000000000, 0], // Price of domain
+          calldata: [NamingContract, 0, 1], // Price of domain
         },
         {
           contractAddress: IdentityContract,
@@ -128,20 +118,17 @@ describe("test starknetid.js sdk", () => {
           calldata: [
             "1", // Starknet id linked
             "18925", // Domain encoded "ben"
-            "365", // Expiry
-            "0",
-            account.address, // receiver_address
+            "365", // days
+            "0", // resolver
+            0, // sponsor
             0,
             0,
           ],
         },
         {
-          contractAddress: NamingContract,
-          entrypoint: "set_address_to_domain",
-          calldata: [
-            "1", // length
-            "18925", // Domain encoded "ben"
-          ],
+          contractAddress: IdentityContract,
+          entrypoint: "set_main_id",
+          calldata: ["1"],
         },
       ],
       undefined,
