@@ -56,6 +56,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         entrypoint: "domain_to_address",
         calldata: CallData.compile({
           domain: encodedDomain,
+          hint: [],
         }),
       });
       return addressData.result[0];
@@ -82,14 +83,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const stringDomain = decodeDomain(decimalDomain);
 
       if (!stringDomain) {
-        throw new Error("Starkname not found");
+        throw new Error("Could not get stark name");
       }
 
       return stringDomain;
     } catch (e) {
-      if (e instanceof Error && e.message === "Starkname not found") {
-        throw e;
-      }
       throw new Error("Could not get stark name");
     }
   }
@@ -104,14 +102,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       );
       const starknetId = await this.provider.callContract({
         contractAddress: contract,
-        entrypoint: "domain_to_token_id",
+        entrypoint: "domain_to_id",
         calldata: CallData.compile({
           domain: encodedDomain,
         }),
       });
       return BigInt(starknetId.result[0]).toString();
     } catch (e) {
-      if (e instanceof Error && e.message === "Starkname not found") {
+      if (e instanceof Error && e.message === "Could not get stark name") {
         throw e;
       }
       throw new Error("Could not get starknet id from starkname");
@@ -410,9 +408,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           {
             execution: this.staticExecution(),
             to: this.hardcoded(namingContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("domain_to_token_id"),
-            ),
+            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
             calldata: [this.arrayReference(0, 0)],
           },
           {

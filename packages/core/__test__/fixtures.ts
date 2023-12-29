@@ -7,7 +7,6 @@ import {
   CompiledSierraCasm,
   ProviderInterface,
   RpcProvider,
-  SequencerProvider,
   json,
 } from "starknet";
 
@@ -40,18 +39,15 @@ const readContractSierra = (name: string): CompiledSierra =>
   );
 
 export const compiledErc20 = readContract("ERC20");
-// export const compiledStarknetId = readContract("starknetId_compiled");
-export const compiledNamingContract = readContract("naming_compiled");
-export const compiledPricingContract = readContract("pricing_compiled");
 
 export const erc20ClassHash =
   "0x0673aea444139eadc086efb400c286e1c0ddbab27ef8fcb5a0341ea7aa227df2";
-export const starknetIdClassHash =
-  "0x062934699d840c5ff5ed6f7c047bb567b2d883d66b9632911f6f07a0b7c95902";
+export const identityClassHash =
+  "0x701e2b0ea55169dadfa428f1385da75adb9713bac68cfc2cb0e41788fbb0544";
 export const namingClassHash =
-  "0x0263b7bbcd2585ed5d8fb9c0cb2f058fddde7d47aab52adbfe765eacbb773264";
+  "0x3f38a1919cb133925974e7df093d9cbaf3d6e77d154e0d92114abef40c1e1a6";
 export const pricingClassHash =
-  "0x013b49affb16dd1ee272aeb5478510f0cff52364a5a0c28cdb44b7e02ed41355";
+  "0x316c001d23331128a3c3d58051584d38ebb373047996784bd9aca12387f6564";
 
 export const compiledErc20Sierra = readContractSierra("erc20/erc20");
 export const compiledErc20SierraCasm = readContractSierraCasm("erc20/erc20");
@@ -73,34 +69,23 @@ export const compiledErc721Sierra = readContractSierra("erc721/erc721");
 export const compiledErc721SierraCasm = readContractSierraCasm("erc721/erc721");
 
 /* Default test config based on run `starknet-devnet --seed 0` */
-const DEFAULT_TEST_PROVIDER_SEQUENCER_URL = "http://127.0.0.1:5050/";
-
-/* User defined config or default one */
-const BASE_URL =
-  process.env.TEST_PROVIDER_BASE_URL || DEFAULT_TEST_PROVIDER_SEQUENCER_URL;
-const RPC_URL = process.env.TEST_RPC_URL;
-
-/* Detect user defined node or sequencer, if none default to sequencer if both default to node */
-const PROVIDER_URL = RPC_URL || BASE_URL;
+const DEFAULT_TEST_RPC_URL = "http://127.0.0.1:5050/";
+const RPC_URL = process.env.TEST_RPC_URL || DEFAULT_TEST_RPC_URL;
 
 /* Detect is localhost devnet */
 export const IS_LOCALHOST_DEVNET =
-  PROVIDER_URL.includes("localhost") || PROVIDER_URL.includes("127.0.0.1");
+  RPC_URL.includes("localhost") || RPC_URL.includes("127.0.0.1");
 
-export const IS_DEVNET_RPC =
-  IS_LOCALHOST_DEVNET && PROVIDER_URL.includes("rpc");
+export const IS_DEVNET_RPC = IS_LOCALHOST_DEVNET && RPC_URL.includes("rpc");
 export const IS_DEVNET_SEQUENCER =
-  IS_LOCALHOST_DEVNET && !PROVIDER_URL.includes("rpc");
+  IS_LOCALHOST_DEVNET && !RPC_URL.includes("rpc");
 
 /* Definitions */
 export const IS_RPC = !!RPC_URL;
 export const IS_SEQUENCER = !RPC_URL;
 
 export const getTestProvider = (): ProviderInterface => {
-  const provider = RPC_URL
-    ? new RpcProvider({ nodeUrl: RPC_URL })
-    : new SequencerProvider({ baseUrl: BASE_URL });
-
+  const provider = new RpcProvider({ nodeUrl: RPC_URL });
   if (IS_LOCALHOST_DEVNET) {
     // accelerate the tests when running locally
     const originalWaitForTransaction =
@@ -121,18 +106,18 @@ export const getTestProvider = (): ProviderInterface => {
 export const DEVNET_ACCOUNTS = [
   {
     address:
-      "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a",
-    secret: "0xe3e70682c2094cac629f6fbed82c07cd",
+      "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+    secret: "0x71d7bb07b9a64f6f78ac4c816aff4da9",
   },
   {
     address:
-      "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-    secret: "0xf728b4fa42485e3a0a5d2f346baa9455",
+      "0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1",
+    secret: "0xe1406455b7d66b1690803be066cbe5e",
   },
   {
     address:
-      "0x7447084f620ba316a42c72ca5b8eefb3fe9a05ca5fe6430c65a69ecc4349b3b",
-    secret: "0xeb1167b367a9c3787c65c1e582e2e662",
+      "0x49dfb8ce986e21d354ac93ea65e6a11f639c1934ea253e5ff14ca62eca0f38e",
+    secret: "0xa20a02f0ac53692d144b20cb371a60d7",
   },
 ];
 

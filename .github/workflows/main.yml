@@ -12,7 +12,7 @@ jobs:
   test:
     services:
       devnet:
-        image: shardlabs/starknet-devnet:0.6.2-seed0
+        image: shardlabs/starknet-devnet-rs:1bd447d8ac8c2fb0a3eaf2d54512671f4a16c7ba-seed0
         ports:
           - 5050:5050
     runs-on: ubuntu-latest
