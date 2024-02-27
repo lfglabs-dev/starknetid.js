@@ -3,6 +3,8 @@ import { StarknetIdNavigator } from "../src";
 import {
   compiledIdentitySierra,
   compiledIdentitySierraCasm,
+  compiledMulticallSierra,
+  compiledMulticallSierraCasm,
   compiledNamingSierra,
   compiledNamingSierraCasm,
   compiledPricingSierra,
@@ -20,6 +22,7 @@ describe("test starknetid.js sdk", () => {
     "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
   let NamingContract: string;
   let IdentityContract: string;
+  let MulticallContract: string;
 
   beforeAll(async () => {
     expect(account).toBeInstanceOf(Account);
@@ -61,6 +64,16 @@ describe("test starknetid.js sdk", () => {
       { maxFee: 1e18 },
     );
     NamingContract = namingResponse.deploy.contract_address;
+
+    // Deploy multicall contract
+    const multicallResponse = await account.declareAndDeploy(
+      {
+        contract: compiledMulticallSierra,
+        casm: compiledMulticallSierraCasm,
+      },
+      { maxFee: 1e18 },
+    );
+    MulticallContract = multicallResponse.deploy.contract_address;
 
     const { transaction_hash } = await account.execute(
       [
@@ -127,6 +140,24 @@ describe("test starknetid.js sdk", () => {
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     const name = await starknetIdNavigator.getStarkName(account.address);
     expect(name).toBe("ben.stark");
+  });
+
+  test("getStarkNames should work", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const addresses = [account.address, account.address, account.address];
+    const names = await starknetIdNavigator.getStarkNames(
+      addresses,
+      MulticallContract,
+    );
+    expect(names).toEqual(["ben.stark", "ben.stark", "ben.stark"]);
   });
 
   test("getStarknetId should return id 1 for ben.stark", async () => {
