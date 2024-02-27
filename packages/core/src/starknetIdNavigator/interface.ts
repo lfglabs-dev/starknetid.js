@@ -23,6 +23,18 @@ export abstract class StarknetIdNavigatorInterface {
   public abstract getStarkName(address: string): Promise<string>;
 
   /**
+   * Get Starknames from an array of address
+   *
+   * @param addresses
+   * @param multicallContract (optional, will use the default one if not provided)
+   * @returns starknames
+   */
+  public abstract getStarkNames(
+    addresses: string[],
+    multicallContract?: string,
+  ): Promise<string[]>;
+
+  /**
    * Get Starknet id from domain
    *
    * @param domain name

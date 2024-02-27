@@ -11,6 +11,7 @@ import {
   cairo,
   Contract,
   RawArgs,
+  RawArgsArray,
 } from "starknet";
 import {
   decodeDomain,
@@ -92,6 +93,59 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       return stringDomain;
     } catch (e) {
       throw new Error("Could not get stark name");
+    }
+  }
+
+  public async getStarkNames(
+    addresses: string[],
+    multicallContract?: string,
+  ): Promise<string[]> {
+    const namingContract =
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
+    const multicallAddress =
+      multicallContract ?? getMulticallContract(this.chainId);
+
+    // We need our contract to know the abi,
+    // otherwise we have to hardcode all the values for each enums
+    const { abi: multicallAbi } = await this.provider.getClassAt(
+      multicallAddress,
+    );
+    const contract = new Contract(
+      multicallAbi,
+      multicallAddress,
+      this.provider,
+    );
+
+    try {
+      // build calldata for all addresses
+      let calldata: RawArgsArray = [];
+      addresses.forEach((address) => {
+        calldata.push({
+          execution: this.staticExecution(),
+          to: this.hardcoded(namingContract),
+          selector: this.hardcoded(
+            hash.getSelectorFromName("address_to_domain"),
+          ),
+          calldata: [this.hardcoded(address)],
+        });
+      });
+
+      const data = await contract.call("aggregate", [calldata]);
+
+      let result: string[] = [];
+      if (Array.isArray(data)) {
+        data.forEach((hexDomain: any) => {
+          const decimalDomain = hexDomain
+            .map((element: bigint) => BigInt(element))
+            .slice(1);
+          const stringDomain = decodeDomain(decimalDomain);
+          result.push(stringDomain);
+        });
+      }
+
+      return result;
+    } catch (e) {
+      throw new Error("Could not get stark names");
     }
   }
 
