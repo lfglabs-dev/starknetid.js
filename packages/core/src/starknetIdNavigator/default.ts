@@ -53,15 +53,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const encodedDomain = encodeDomain(domain).map((elem) =>
         elem.toString(10),
       );
-      // Handling differences between testnet and mainnet, to remove when upgrade is complete
-      const isMainnet = this.chainId === constants.StarknetChainId.SN_MAIN;
-      const calldata: RawArgs = isMainnet
-        ? { domain: encodedDomain }
-        : { domain: encodedDomain, hint: [] };
       const addressData = await this.provider.callContract({
         contractAddress: contract,
         entrypoint: "domain_to_address",
-        calldata: CallData.compile(calldata),
+        calldata: CallData.compile({ domain: encodedDomain, hint: [] }),
       });
       return addressData.result[0];
     } catch {
@@ -157,11 +152,9 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const encodedDomain = encodeDomain(domain).map((elem) =>
         elem.toString(10),
       );
-      // Handling differences between testnet and mainnet, to remove when upgrade is complete
-      const isMainnet = this.chainId === constants.StarknetChainId.SN_MAIN;
       const starknetId = await this.provider.callContract({
         contractAddress: contract,
-        entrypoint: isMainnet ? "domain_to_token_id" : "domain_to_id",
+        entrypoint: "domain_to_id",
         calldata: CallData.compile({
           domain: encodedDomain,
         }),
@@ -453,8 +446,6 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.provider,
     );
 
-    const isMainnet = this.chainId === constants.StarknetChainId.SN_MAIN;
-
     try {
       const data = await multicallContract.call("aggregate", [
         [
@@ -469,9 +460,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           {
             execution: this.staticExecution(),
             to: this.hardcoded(namingContract),
-            selector: isMainnet
-              ? this.hardcoded(hash.getSelectorFromName("domain_to_token_id"))
-              : this.hardcoded(hash.getSelectorFromName("domain_to_id")),
+            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
             calldata: [this.arrayReference(0, 0)],
           },
           {
