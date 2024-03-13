@@ -10,7 +10,6 @@ import {
   CairoCustomEnum,
   cairo,
   Contract,
-  RawArgs,
   RawArgsArray,
 } from "starknet";
 import {

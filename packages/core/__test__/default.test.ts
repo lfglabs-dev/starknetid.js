@@ -160,6 +160,28 @@ describe("test starknetid.js sdk", () => {
     expect(names).toEqual(["ben.stark", "ben.stark", "ben.stark"]);
   });
 
+  test("getStarkNames with addresses that don't have domains should work", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_GOERLI,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    const addresses = [
+      account.address,
+      "0x0302de76464d4e2447F2d1831fb0A1AF101B18F80964fCfff1aD831C0A92e1fD",
+      account.address,
+    ];
+    const names = await starknetIdNavigator.getStarkNames(
+      addresses,
+      MulticallContract,
+    );
+    expect(names).toEqual(["ben.stark", "", "ben.stark"]);
+  });
+
   test("getStarknetId should return id 1 for ben.stark", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
