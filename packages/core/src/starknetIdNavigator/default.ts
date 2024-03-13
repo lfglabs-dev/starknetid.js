@@ -10,7 +10,6 @@ import {
   CairoCustomEnum,
   cairo,
   Contract,
-  RawArgs,
   RawArgsArray,
 } from "starknet";
 import {
@@ -140,6 +139,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       return result;
     } catch (e) {
+      console.log(e);
       throw new Error("Could not get stark names");
     }
   }
