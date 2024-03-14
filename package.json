@@ -1,6 +1,6 @@
 {
   "name": "starknetid.js",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "JavaScript library for Starknet ID",
   "private": false,
   "license": "MIT",
@@ -53,7 +53,7 @@
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0-0",
-    "starknet": "^5.14.1"
+    "starknet": "^5.25.0"
   },
   "files": [
     "packages/core/dist",
