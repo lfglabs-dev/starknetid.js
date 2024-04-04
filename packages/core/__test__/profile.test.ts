@@ -22,6 +22,7 @@ describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
   const provider = getTestProvider();
   const account = getTestAccount(provider)[0];
+  const account2 = getTestAccount(provider)[1];
   const otherAccount = getTestAccount(provider)[1];
 
   let erc20Address: string =
@@ -91,7 +92,7 @@ describe("test starknetid.js sdk", () => {
           shortString.encodeShortString("NFT"),
           shortString.encodeShortString("NFT"),
           [
-            shortString.encodeShortString("https://goerli.api.starknet.qu"),
+            shortString.encodeShortString("https://sepolia.api.starknet.qu"),
             shortString.encodeShortString("est/quests/uri?level="),
           ],
         ],
@@ -285,9 +286,156 @@ describe("test starknetid.js sdk", () => {
         discord: "123",
         proofOfPersonhood: false,
         profilePicture:
-          "https://goerli.starknet.quest/starkfighter/level1.webp",
+          "https://sepolia.starknet.quest/starkfighter/level1.webp",
       };
       expect(profile).toStrictEqual(expectedProfile);
+    });
+  });
+
+  describe("getStarkProfiles", () => {
+    beforeEach(() => {
+      (getMulticallContract as jest.Mock).mockImplementation(
+        (chainId: constants.StarknetChainId) => {
+          if (chainId === constants.StarknetChainId.SN_GOERLI) {
+            return MulticallContract;
+          }
+        },
+      );
+      (decodeDomain as jest.Mock).mockImplementation((encoded: bigint[]) => {
+        console.log("encoded", encoded);
+        if (encoded[0] === 18925n) return "ben.stark";
+        else if (encoded[0] === 1068731n) return "test.stark";
+        return "";
+      });
+    });
+
+    beforeAll(async () => {
+      // buy a second domain
+      const { transaction_hash } = await account2.execute(
+        [
+          {
+            contractAddress: erc20Address,
+            entrypoint: "approve",
+            calldata: [NamingContract, 0, 1], // Price of domain
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "mint",
+            calldata: ["2"], // TokenId
+          },
+          {
+            contractAddress: NamingContract,
+            entrypoint: "buy",
+            calldata: [
+              "2", // Starknet id linked
+              "1068731", // Domain encoded "test"
+              "365", // days
+              "0", // resolver
+              0, // sponsor
+              0,
+              0,
+            ],
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_main_id",
+            calldata: ["2"],
+          },
+        ],
+        undefined,
+        { maxFee: 1e18 },
+      );
+      await provider.waitForTransaction(transaction_hash);
+    });
+
+    test("getStarkProfiles with useDefaultPfp enabled", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profiles = await starknetIdNavigator.getStarkProfiles(
+        [account.address, account2.address, "0x123"],
+        true,
+        otherAccount.address,
+      );
+      console.log("profiles in the end", profiles);
+      const expectedProfiles = [
+        {
+          name: "ben.stark",
+          profilePicture:
+            "https://sepolia.starknet.quest/starkfighter/level1.webp",
+        },
+        {
+          name: "test.stark",
+          profilePicture: "https://starknet.id/api/identicons/2",
+        },
+        {
+          name: undefined,
+          profilePicture: "https://starknet.id/api/identicons/0",
+        },
+      ];
+      expect(profiles).toStrictEqual(expectedProfiles);
+    });
+
+    test("getStarkProfiles with useDefaultPfp disabled", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profiles = await starknetIdNavigator.getStarkProfiles(
+        [
+          account.address,
+          account2.address,
+          "0x123",
+          account2.address,
+          account.address,
+          "0x456",
+          "0x789",
+          account.address,
+        ],
+        false,
+        otherAccount.address,
+      );
+      console.log("profiles in the end", profiles);
+      const expectedProfiles = [
+        {
+          name: "ben.stark",
+          profilePicture:
+            "https://sepolia.starknet.quest/starkfighter/level1.webp",
+        },
+        {
+          name: "test.stark",
+          profilePicture: undefined,
+        },
+        { name: undefined, profilePicture: undefined },
+        {
+          name: "test.stark",
+          profilePicture: undefined,
+        },
+        {
+          name: "ben.stark",
+          profilePicture:
+            "https://sepolia.starknet.quest/starkfighter/level1.webp",
+        },
+        { name: undefined, profilePicture: undefined },
+        { name: undefined, profilePicture: undefined },
+        {
+          name: "ben.stark",
+          profilePicture:
+            "https://sepolia.starknet.quest/starkfighter/level1.webp",
+        },
+      ];
+      expect(profiles).toStrictEqual(expectedProfiles);
     });
   });
 });

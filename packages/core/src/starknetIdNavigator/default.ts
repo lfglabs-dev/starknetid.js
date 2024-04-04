@@ -600,6 +600,143 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
+  public async getStarkProfiles(
+    addresses: string[],
+    useDefaultPfp: boolean = true,
+    pfp_verifier?: string,
+  ): Promise<StarkProfile[]> {
+    const identityContract =
+      this.StarknetIdContract.identity ?? getIdentityContract(this.chainId);
+    const namingContract =
+      this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
+    const pfpVerifierContract =
+      pfp_verifier ?? getPfpVerifierContract(this.chainId);
+    const multicallAddress = getMulticallContract(this.chainId);
+
+    // We need our contract to know the abi,
+    // otherwise we have to hardcode all the values for each enums
+    const { abi: multicallAbi } = await this.provider.getClassAt(
+      multicallAddress,
+    );
+    const multicallContract = new Contract(
+      multicallAbi,
+      multicallAddress,
+      this.provider,
+    );
+
+    try {
+      let calldata: RawArgsArray = [];
+      let uriCalldata: RawArgsArray = [];
+      const nbInstructions = 4;
+
+      addresses.forEach((address, index) => {
+        calldata.push(
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(namingContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("address_to_domain"),
+            ),
+            calldata: [this.hardcoded(address)],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(namingContract),
+            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
+            calldata: [this.arrayReference(index * nbInstructions, 0)], //  result of address_to_domain
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_verifier_data"),
+            ),
+            calldata: [
+              this.reference(index * nbInstructions + 1, 0), // result of domain_to_id
+              this.hardcoded(shortString.encodeShortString("nft_pp_contract")),
+              this.hardcoded(pfpVerifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+          {
+            execution: this.staticExecution(),
+            to: this.hardcoded(identityContract),
+            selector: this.hardcoded(
+              hash.getSelectorFromName("get_extended_verifier_data"),
+            ),
+            calldata: [
+              this.reference(index * nbInstructions + 1, 0), // result of domain_to_id
+              this.hardcoded(shortString.encodeShortString("nft_pp_id")),
+              this.hardcoded("2"),
+              this.hardcoded(pfpVerifierContract),
+              this.hardcoded("0"),
+            ],
+          },
+        );
+
+        // we only fetch the uri if the nft_pp_contract is not 0
+        uriCalldata.push({
+          execution: this.notEqual(index * nbInstructions + 2, 0, 0), // result of nft_pp_contract
+          to: this.reference(index * nbInstructions + 2, 0),
+          selector: this.hardcoded(hash.getSelectorFromName("tokenURI")),
+          calldata: [
+            this.reference(index * nbInstructions + 3, 1),
+            this.reference(index * nbInstructions + 3, 2),
+          ],
+        });
+      });
+
+      const data = await multicallContract.call("aggregate", [
+        [...calldata, ...uriCalldata],
+      ]);
+
+      if (Array.isArray(data)) {
+        let results: StarkProfile[] = [];
+        const callResult = data.slice(0, addresses.length * nbInstructions);
+        const uriResult = data.slice(addresses.length * nbInstructions);
+        let uriIndex = 0;
+
+        for (let i = 0; i < addresses.length; i++) {
+          const name = decodeDomain(callResult[i * nbInstructions].slice(1));
+          const nftContract = callResult[i * nbInstructions + 2][0];
+
+          const profilePictureMetadata =
+            nftContract !== BigInt(0)
+              ? uriResult[uriIndex]
+                  .slice(1)
+                  .map((val: BigInt) =>
+                    shortString.decodeShortString(val.toString()),
+                  )
+                  .join("")
+              : undefined;
+          if (nftContract !== BigInt(0)) uriIndex++;
+
+          // extract nft_image from profile picture metadata
+          const profilePicture = profilePictureMetadata
+            ? await this.fetchImageUrl(profilePictureMetadata)
+            : useDefaultPfp
+            ? `https://starknet.id/api/identicons/${callResult[
+                i * nbInstructions + 1
+              ][0].toString()}` // result of domain_to_id
+            : undefined;
+
+          results.push({
+            name: name.length > 0 ? name : undefined,
+            profilePicture,
+          });
+        }
+        return results;
+      } else {
+        throw Error("Error while calling aggregate function");
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        throw e;
+      }
+      throw Error("Could not get profiles from addresses");
+    }
+  }
+
   private async checkArguments(idDomainOrAddr: string): Promise<string> {
     if (typeof idDomainOrAddr === "string") {
       if (/^\d+$/.test(idDomainOrAddr)) {
@@ -660,7 +797,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     });
   };
 
-  private async fetchImageUrl(url: string): Promise<string> {
+  private async fetchImageUrl(url: string): Promise<string | undefined> {
     try {
       const response = await fetch(url);
 
@@ -674,11 +811,12 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (data.image) {
         return data.image;
       } else {
-        return "Image is not set";
+        console.error("Image is not set");
+        return undefined;
       }
     } catch (error) {
       console.error("There was a problem fetching the image URL:", error);
-      return "Error fetching data";
+      return undefined;
     }
   }
 }
