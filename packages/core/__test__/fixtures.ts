@@ -67,6 +67,9 @@ export const compiledMulticallSierraCasm = readContractSierraCasm(
 );
 export const compiledErc721Sierra = readContractSierra("erc721/erc721");
 export const compiledErc721SierraCasm = readContractSierraCasm("erc721/erc721");
+export const compiledResolverSierra = readContractSierra("resolver/resolver");
+export const compiledResolverSierraCasm =
+  readContractSierraCasm("resolver/resolver");
 
 /* Default test config based on run `starknet-devnet --seed 0` */
 const DEFAULT_TEST_RPC_URL = "http://127.0.0.1:5050/";
