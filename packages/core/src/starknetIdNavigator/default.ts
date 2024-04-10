@@ -597,7 +597,9 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
         // extract nft_image from profile data
         const profilePicture = profilePictureMetadata
-          ? await this.fetchImageUrl(profilePictureMetadata)
+          ? profilePictureMetadata.includes("base64")
+            ? this.parseBase64Image(profilePictureMetadata)
+            : await this.fetchImageUrl(profilePictureMetadata)
           : useDefaultPfp
           ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
           : undefined;
@@ -732,6 +734,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       console.error("There was a problem fetching the image URL:", error);
       return "Error fetching data";
     }
+  }
+
+  private parseBase64Image(metadata: string): string {
+    return JSON.parse(atob(metadata.split(",")[1].slice(0, -1))).image;
   }
 
   private async queryServer(serverUri: string, domain: string) {
