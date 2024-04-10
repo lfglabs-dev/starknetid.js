@@ -47,19 +47,40 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public async getAddressFromStarkName(domain: string): Promise<string> {
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
+    const encodedDomain = encodeDomain(domain).map((elem) => elem.toString(10));
 
     try {
-      const encodedDomain = encodeDomain(domain).map((elem) =>
-        elem.toString(10),
-      );
-      const addressData = await this.provider.callContract({
-        contractAddress: contract,
-        entrypoint: "domain_to_address",
-        calldata: CallData.compile({ domain: encodedDomain, hint: [] }),
-      });
-      return addressData.result[0];
-    } catch {
-      throw new Error("Could not get address from stark name");
+      return await this.tryResolveDomain(contract, encodedDomain, []);
+    } catch (error) {
+      if (error instanceof Error) {
+        // extract server uri from error message
+        const data = this.extractArrayFromErrorMessage(String(error));
+        if (!data?.includes("offchain_resolving")) {
+          // if the error is not related to offchain resolving
+          throw new Error("Could not get address from stark name");
+        }
+        const uri = data.slice(1).join("");
+
+        // Query server
+        try {
+          const serverRes = await this.queryServer(uri, domain);
+          if (serverRes.error) {
+            throw new Error("Could not resolve domain");
+          }
+          // try resolving with hint
+          const hint: any[] = [
+            serverRes.data.address,
+            serverRes.data.r,
+            serverRes.data.s,
+            serverRes.data.max_validity,
+          ];
+          return await this.tryResolveDomain(contract, encodedDomain, hint);
+        } catch (error: any) {
+          throw new Error(`Could not resolve domain : ${error.message}`);
+        }
+      } else {
+        throw new Error("Could not get address from stark name");
+      }
     }
   }
 
@@ -602,6 +623,37 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     }
   }
 
+  private async tryResolveDomain(
+    contract: string,
+    encodedDomain: string[],
+    hint: any = [],
+  ): Promise<string> {
+    const addressData = await this.provider.callContract({
+      contractAddress: contract,
+      entrypoint: "domain_to_address",
+      calldata: CallData.compile({ domain: encodedDomain, hint }),
+    });
+    return addressData.result[0];
+  }
+
+  private extractArrayFromErrorMessage(errorMsg: string) {
+    const pattern = /Execution failed\. Failure reason: \((.*?)\)\./;
+    const match = errorMsg.match(pattern);
+
+    if (match && match[1]) {
+      const values = match[1].split(",").map((value) => value.trim());
+      const res = values.map((entry) => {
+        const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
+        if (hexMatch && hexMatch[1]) {
+          return shortString.decodeShortString(hexMatch[1]);
+        }
+      });
+      return res;
+    }
+
+    return null;
+  }
+
   private async checkArguments(idDomainOrAddr: string): Promise<string> {
     if (typeof idDomainOrAddr === "string") {
       if (/^\d+$/.test(idDomainOrAddr)) {
@@ -686,5 +738,20 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
   private parseBase64Image(metadata: string): string {
     return JSON.parse(atob(metadata.split(",")[1].slice(0, -1))).image;
+  }
+
+  private async queryServer(serverUri: string, domain: string) {
+    try {
+      const response = await fetch(`${serverUri}${domain}`);
+
+      if (!response.ok) {
+        const errorResponse = await response.text();
+        throw new Error(errorResponse || "Error while querying server");
+      }
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      return { error };
+    }
   }
 }
