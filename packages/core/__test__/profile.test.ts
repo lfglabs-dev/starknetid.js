@@ -91,7 +91,7 @@ describe("test starknetid.js sdk", () => {
           shortString.encodeShortString("NFT"),
           shortString.encodeShortString("NFT"),
           [
-            shortString.encodeShortString("https://goerli.api.starknet.qu"),
+            shortString.encodeShortString("https://sepolia.api.starknet.qu"),
             shortString.encodeShortString("est/quests/uri?level="),
           ],
         ],
@@ -285,7 +285,7 @@ describe("test starknetid.js sdk", () => {
         discord: "123",
         proofOfPersonhood: false,
         profilePicture:
-          "https://goerli.starknet.quest/starkfighter/level1.webp",
+          "https://sepolia.starknet.quest/starkfighter/level1.webp",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
