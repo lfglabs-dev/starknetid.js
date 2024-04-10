@@ -5,7 +5,7 @@ describe("test starknetid.js sdk on mainnet", () => {
   jest.setTimeout(90000000);
   const provider = new Provider({
     rpc: {
-      nodeUrl: "https://rpc.starknet.id",
+      nodeUrl: "https://rpc.starknet.lava.build",
     },
   });
 
