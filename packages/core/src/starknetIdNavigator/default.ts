@@ -576,7 +576,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
         // extract nft_image from profile data
         const profilePicture = profilePictureMetadata
-          ? await this.fetchImageUrl(profilePictureMetadata)
+          ? profilePictureMetadata.includes("base64")
+            ? JSON.parse(
+                atob(profilePictureMetadata.split(",")[1].slice(0, -1)),
+              ).image
+            : await this.fetchImageUrl(profilePictureMetadata)
           : useDefaultPfp
           ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
           : undefined;
