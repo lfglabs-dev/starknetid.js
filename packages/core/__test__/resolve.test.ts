@@ -19,6 +19,7 @@ describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
   const provider = getTestProvider();
   const account = getTestAccount(provider)[0];
+  const account2 = getTestAccount(provider)[1];
 
   let erc20Address: string =
     "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
@@ -106,11 +107,6 @@ describe("test starknetid.js sdk", () => {
             0,
           ],
         },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_main_id",
-          calldata: ["1"],
-        },
       ],
       undefined,
       { maxFee: 1e18 },
@@ -147,6 +143,101 @@ describe("test starknetid.js sdk", () => {
         "iris.test.stark",
       );
       expect(address).toBe(account.address);
+    });
+  });
+
+  describe("Try reverse resolving a domain without set_address_to_domain ", () => {
+    beforeEach(() => {
+      fetch.mockClear();
+    });
+
+    test("resolve address returns an error", async () => {
+      fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          address:
+            "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
+          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
+          max_validity: 1716966719,
+        }),
+      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      await expect(
+        starknetIdNavigator.getStarkName(account.address),
+      ).rejects.toThrow("Could not get stark name from address");
+    });
+  });
+
+  describe("Test reverse resolving", () => {
+    const serverResponse = {
+      address:
+        "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+      r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
+      s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
+      max_validity: 1716966719,
+    };
+    beforeEach(() => {
+      fetch.mockClear();
+    });
+
+    beforeAll(async () => {
+      expect(account).toBeInstanceOf(Account);
+      const { transaction_hash } = await account.execute(
+        [
+          {
+            contractAddress: NamingContract,
+            entrypoint: "set_address_to_domain",
+            calldata: [
+              // iris.test.stark encoded
+              2,
+              999902,
+              1068731,
+              // hints
+              4,
+              serverResponse.address,
+              serverResponse.r,
+              serverResponse.s,
+              serverResponse.max_validity,
+            ],
+          },
+        ],
+        undefined,
+        { maxFee: 1e18 },
+      );
+      await provider.waitForTransaction(transaction_hash);
+    });
+
+    test("resolve address returns the subdomain", async () => {
+      fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          address:
+            "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
+          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
+          max_validity: 1716966719,
+        }),
+      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const address = await starknetIdNavigator.getStarkName(account.address);
+      expect(address).toBe("iris.test.stark");
     });
   });
 });

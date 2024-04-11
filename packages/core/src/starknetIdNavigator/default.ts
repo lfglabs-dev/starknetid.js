@@ -7,10 +7,9 @@ import {
   constants,
   CallData,
   hash,
-  CairoCustomEnum,
-  cairo,
   Contract,
   RawArgsArray,
+  RawArgs,
 } from "starknet";
 import {
   decodeDomain,
@@ -25,6 +24,17 @@ import {
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
 import { StarkProfile, StarknetIdContracts } from "../types";
+import {
+  arrayReference,
+  extractArrayFromErrorMessage,
+  fetchImageUrl,
+  hardcoded,
+  notEqual,
+  parseBase64Image,
+  queryServer,
+  reference,
+  staticExecution,
+} from "./internal";
 
 export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public provider: ProviderInterface;
@@ -54,7 +64,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     } catch (error) {
       if (error instanceof Error) {
         // extract server uri from error message
-        const data = this.extractArrayFromErrorMessage(String(error));
+        const data = extractArrayFromErrorMessage(String(error));
         if (!data?.includes("offchain_resolving")) {
           // if the error is not related to offchain resolving
           throw new Error("Could not get address from stark name");
@@ -63,7 +73,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
         // Query server
         try {
-          const serverRes = await this.queryServer(uri, domain);
+          const serverRes = await queryServer(uri, domain);
           if (serverRes.error) {
             throw new Error("Could not resolve domain");
           }
@@ -89,25 +99,37 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
-      const hexDomain = await this.provider.callContract({
-        contractAddress: contract,
-        entrypoint: "address_to_domain",
-        calldata: CallData.compile({
-          address: address,
-        }),
-      });
-      const decimalDomain = hexDomain.result
-        .map((element) => BigInt(element))
-        .slice(1);
-      const stringDomain = decodeDomain(decimalDomain);
+      return await this.tryResolveAddress(contract, address, []);
+    } catch (error) {
+      if (error instanceof Error) {
+        // extract server uri from error message
+        const data = extractArrayFromErrorMessage(String(error));
+        if (!data?.includes("offchain_resolving")) {
+          // if the error is not related to offchain resolving
+          throw new Error("Could not get stark name from address");
+        }
+        const uri = data.slice(1).join("");
 
-      if (!stringDomain) {
+        // Query server
+        try {
+          const serverRes = await queryServer(uri, address);
+          if (serverRes.error) {
+            throw new Error("Could not resolve domain");
+          }
+          // try resolving with hint
+          const hint: any[] = [
+            serverRes.data.address,
+            serverRes.data.r,
+            serverRes.data.s,
+            serverRes.data.max_validity,
+          ];
+          return await this.tryResolveAddress(contract, address, hint);
+        } catch (error: any) {
+          throw new Error(`Could not resolve address : ${error.message}`);
+        }
+      } else {
         throw new Error("Could not get stark name");
       }
-
-      return stringDomain;
-    } catch (e) {
-      throw new Error("Could not get stark name");
     }
   }
 
@@ -135,13 +157,16 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       // build calldata for all addresses
       let calldata: RawArgsArray = [];
       addresses.forEach((address) => {
+        const data =
+          this.chainId === constants.StarknetChainId.SN_MAIN
+            ? [hardcoded(address)]
+            : [hardcoded(address), hardcoded("0")];
+
         calldata.push({
-          execution: this.staticExecution(),
-          to: this.hardcoded(namingContract),
-          selector: this.hardcoded(
-            hash.getSelectorFromName("address_to_domain"),
-          ),
-          calldata: [this.hardcoded(address)],
+          execution: staticExecution(),
+          to: hardcoded(namingContract),
+          selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
+          calldata: data,
         });
       });
 
@@ -466,110 +491,101 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.provider,
     );
 
+    //todo check that I'm sending the hint arg correctly
+    const calldata =
+      this.chainId === constants.StarknetChainId.SN_MAIN
+        ? [hardcoded(address)]
+        : [hardcoded(address), hardcoded("0")];
     try {
       const data = await multicallContract.call("aggregate", [
         [
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("address_to_domain"),
-            ),
-            calldata: [this.hardcoded(address)],
+            execution: staticExecution(),
+            to: hardcoded(namingContract),
+            selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
+            calldata: calldata,
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
-            calldata: [this.arrayReference(0, 0)],
+            execution: staticExecution(),
+            to: hardcoded(namingContract),
+            selector: hardcoded(hash.getSelectorFromName("domain_to_id")),
+            calldata: [arrayReference(0, 0)],
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(hash.getSelectorFromName("get_verifier_data")),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("twitter")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("twitter")),
+              hardcoded(verifierContract),
+              hardcoded("0"),
             ],
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(hash.getSelectorFromName("get_verifier_data")),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("github")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("github")),
+              hardcoded(verifierContract),
+              hardcoded("0"),
             ],
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(hash.getSelectorFromName("get_verifier_data")),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("discord")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("discord")),
+              hardcoded(verifierContract),
+              hardcoded("0"),
             ],
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(hash.getSelectorFromName("get_verifier_data")),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(
-                shortString.encodeShortString("proof_of_personhood"),
-              ),
-              this.hardcoded(popVerifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("proof_of_personhood")),
+              hardcoded(popVerifierContract),
+              hardcoded("0"),
             ],
           },
           // PFP
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(hash.getSelectorFromName("get_verifier_data")),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("nft_pp_contract")),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("nft_pp_contract")),
+              hardcoded(pfpVerifierContract),
+              hardcoded("0"),
             ],
           },
           {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
+            execution: staticExecution(),
+            to: hardcoded(identityContract),
+            selector: hardcoded(
               hash.getSelectorFromName("get_extended_verifier_data"),
             ),
             calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("nft_pp_id")),
-              this.hardcoded("2"),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
+              reference(1, 0),
+              hardcoded(shortString.encodeShortString("nft_pp_id")),
+              hardcoded("2"),
+              hardcoded(pfpVerifierContract),
+              hardcoded("0"),
             ],
           },
           {
-            execution: this.notEqual(6, 0, 0),
-            to: this.reference(6, 0),
-            selector: this.hardcoded(hash.getSelectorFromName("tokenURI")),
-            calldata: [this.reference(7, 1), this.reference(7, 2)],
+            execution: notEqual(6, 0, 0),
+            to: reference(6, 0),
+            selector: hardcoded(hash.getSelectorFromName("tokenURI")),
+            calldata: [reference(7, 1), reference(7, 2)],
           },
         ],
       ]);
@@ -598,8 +614,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         // extract nft_image from profile data
         const profilePicture = profilePictureMetadata
           ? profilePictureMetadata.includes("base64")
-            ? this.parseBase64Image(profilePictureMetadata)
-            : await this.fetchImageUrl(profilePictureMetadata)
+            ? parseBase64Image(profilePictureMetadata)
+            : await fetchImageUrl(profilePictureMetadata)
           : useDefaultPfp
           ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
           : undefined;
@@ -636,22 +652,31 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     return addressData.result[0];
   }
 
-  private extractArrayFromErrorMessage(errorMsg: string) {
-    const pattern = /Execution failed\. Failure reason: \((.*?)\)\./;
-    const match = errorMsg.match(pattern);
+  private async tryResolveAddress(
+    contract: string,
+    address: string,
+    hint: any = [],
+  ): Promise<string> {
+    // todo: remove when hint are also supported in address_to_domain on mainnet
+    const calldata: RawArgs =
+      this.chainId === constants.StarknetChainId.SN_MAIN
+        ? { address }
+        : { address, hint };
+    const domainData = await this.provider.callContract({
+      contractAddress: contract,
+      entrypoint: "address_to_domain",
+      calldata: CallData.compile(calldata),
+    });
 
-    if (match && match[1]) {
-      const values = match[1].split(",").map((value) => value.trim());
-      const res = values.map((entry) => {
-        const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
-        if (hexMatch && hexMatch[1]) {
-          return shortString.decodeShortString(hexMatch[1]);
-        }
-      });
-      return res;
+    const decimalDomain = domainData.result
+      .map((element) => BigInt(element))
+      .slice(1);
+    const stringDomain = decodeDomain(decimalDomain);
+
+    if (!stringDomain) {
+      throw new Error("Could not get stark name");
     }
-
-    return null;
+    return stringDomain;
   }
 
   private async checkArguments(idDomainOrAddr: string): Promise<string> {
@@ -681,77 +706,6 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       }
     } else {
       throw new Error("Invalid idDomainOrAddr argument");
-    }
-  }
-
-  private hardcoded = (arg: string | number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      Hardcoded: arg,
-    });
-  };
-
-  private reference = (call: number, pos: number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      Reference: cairo.tuple(call, pos),
-    });
-  };
-
-  private arrayReference = (call: number, pos: number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      ArrayReference: cairo.tuple(call, pos),
-    });
-  };
-
-  private staticExecution = () => {
-    return new CairoCustomEnum({
-      Static: {},
-    });
-  };
-
-  private notEqual = (call: number, pos: number, value: number) => {
-    return new CairoCustomEnum({
-      IfNotEqual: cairo.tuple(call, pos, value),
-    });
-  };
-
-  private async fetchImageUrl(url: string): Promise<string> {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      // Check if the "image" key exists and is not null
-      if (data.image) {
-        return data.image;
-      } else {
-        return "Image is not set";
-      }
-    } catch (error) {
-      console.error("There was a problem fetching the image URL:", error);
-      return "Error fetching data";
-    }
-  }
-
-  private parseBase64Image(metadata: string): string {
-    return JSON.parse(atob(metadata.split(",")[1].slice(0, -1))).image;
-  }
-
-  private async queryServer(serverUri: string, domain: string) {
-    try {
-      const response = await fetch(`${serverUri}${domain}`);
-
-      if (!response.ok) {
-        const errorResponse = await response.text();
-        throw new Error(errorResponse || "Error while querying server");
-      }
-      const data = await response.json();
-      return { data };
-    } catch (error) {
-      return { error };
     }
   }
 }

@@ -270,7 +270,7 @@ describe("test starknetid.js sdk", () => {
       fetch.mockResolvedValue({
         ok: true,
         json: async () => ({
-          image: "https://goerli.starknet.quest/starkfighter/level1.webp",
+          image: "https://sepolia.starknet.quest/starkfighter/level1.webp",
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
