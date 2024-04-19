@@ -592,8 +592,6 @@ describe("test starknetid.js sdk", () => {
           },
         ];
         expect(profiles).toStrictEqual(expectedProfiles);
-
-        console.log(profiles);
       });
     });
   });
