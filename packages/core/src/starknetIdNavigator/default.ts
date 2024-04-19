@@ -7,10 +7,9 @@ import {
   constants,
   CallData,
   hash,
-  CairoCustomEnum,
-  cairo,
   Contract,
   RawArgsArray,
+  Call,
 } from "starknet";
 import {
   decodeDomain,
@@ -22,9 +21,25 @@ import {
   getPfpVerifierContract,
   getPopVerifierContract,
   getMulticallContract,
+  getUtilsMulticallContract,
+  getBlobbertContract,
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
 import { StarkProfile, StarknetIdContracts } from "../types";
+import {
+  arrayReference,
+  executeMulticallWithFallback,
+  executeWithFallback,
+  fetchImageUrl,
+  getProfileDataCalldata,
+  getStarkProfilesCalldata,
+  getStarknamesCalldata,
+  hardcoded,
+  notEqual,
+  parseBase64Image,
+  reference,
+  staticExecution,
+} from "./internal";
 
 export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public provider: ProviderInterface;
@@ -68,13 +83,27 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
-      const hexDomain = await this.provider.callContract({
+      // todo: remove fallback when naming contract is updated on mainnet
+      const calldata: Call = {
+        contractAddress: contract,
+        entrypoint: "address_to_domain",
+        calldata: CallData.compile({
+          address: address,
+          hint: [],
+        }),
+      };
+      const fallbackCalldata: Call = {
         contractAddress: contract,
         entrypoint: "address_to_domain",
         calldata: CallData.compile({
           address: address,
         }),
-      });
+      };
+      const hexDomain = await executeWithFallback(
+        this.provider,
+        calldata,
+        fallbackCalldata,
+      );
       const decimalDomain = hexDomain.result
         .map((element) => BigInt(element))
         .slice(1);
@@ -111,20 +140,17 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      // build calldata for all addresses
-      let calldata: RawArgsArray = [];
-      addresses.forEach((address) => {
-        calldata.push({
-          execution: this.staticExecution(),
-          to: this.hardcoded(namingContract),
-          selector: this.hardcoded(
-            hash.getSelectorFromName("address_to_domain"),
-          ),
-          calldata: [this.hardcoded(address)],
-        });
-      });
+      let { initialCalldata, fallbackCalldata } = getStarknamesCalldata(
+        addresses,
+        namingContract,
+      );
 
-      const data = await contract.call("aggregate", [calldata]);
+      const data = await executeMulticallWithFallback(
+        contract,
+        "aggregate",
+        initialCalldata,
+        fallbackCalldata,
+      );
 
       let result: string[] = [];
       if (Array.isArray(data)) {
@@ -446,112 +472,20 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      const data = await multicallContract.call("aggregate", [
-        [
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("address_to_domain"),
-            ),
-            calldata: [this.hardcoded(address)],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
-            calldata: [this.arrayReference(0, 0)],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("twitter")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("github")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("discord")),
-              this.hardcoded(verifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(
-                shortString.encodeShortString("proof_of_personhood"),
-              ),
-              this.hardcoded(popVerifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          // PFP
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("nft_pp_contract")),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_extended_verifier_data"),
-            ),
-            calldata: [
-              this.reference(1, 0),
-              this.hardcoded(shortString.encodeShortString("nft_pp_id")),
-              this.hardcoded("2"),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.notEqual(6, 0, 0),
-            to: this.reference(6, 0),
-            selector: this.hardcoded(hash.getSelectorFromName("tokenURI")),
-            calldata: [this.reference(7, 1), this.reference(7, 2)],
-          },
-        ],
-      ]);
+      const { initialCalldata, fallbackCalldata } = getProfileDataCalldata(
+        address,
+        namingContract,
+        identityContract,
+        verifierContract,
+        pfpVerifierContract,
+        popVerifierContract,
+      );
+      const data = await executeMulticallWithFallback(
+        multicallContract,
+        "aggregate",
+        initialCalldata,
+        fallbackCalldata,
+      );
 
       if (Array.isArray(data)) {
         const name = decodeDomain(data[0].slice(1));
@@ -577,8 +511,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         // extract nft_image from profile data
         const profilePicture = profilePictureMetadata
           ? profilePictureMetadata.includes("base64")
-            ? this.parseBase64Image(profilePictureMetadata)
-            : await this.fetchImageUrl(profilePictureMetadata)
+            ? parseBase64Image(profilePictureMetadata)
+            : await fetchImageUrl(profilePictureMetadata)
           : useDefaultPfp
           ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
           : undefined;
@@ -614,6 +548,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const pfpVerifierContract =
       pfp_verifier ?? getPfpVerifierContract(this.chainId);
     const multicallAddress = getMulticallContract(this.chainId);
+    const utilsMulticallContract = getUtilsMulticallContract(this.chainId);
+    const blobbertContract = getBlobbertContract(this.chainId);
 
     // We need our contract to know the abi,
     // otherwise we have to hardcode all the values for each enums
@@ -627,70 +563,22 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      let calldata: RawArgsArray = [];
-      let uriCalldata: RawArgsArray = [];
-      const nbInstructions = 4;
+      const nbInstructions = 5;
+      const { initialCalldata, fallbackCalldata } = getStarkProfilesCalldata(
+        addresses,
+        namingContract,
+        identityContract,
+        pfpVerifierContract,
+        utilsMulticallContract,
+        blobbertContract,
+      );
 
-      addresses.forEach((address, index) => {
-        calldata.push(
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("address_to_domain"),
-            ),
-            calldata: [this.hardcoded(address)],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(namingContract),
-            selector: this.hardcoded(hash.getSelectorFromName("domain_to_id")),
-            calldata: [this.arrayReference(index * nbInstructions, 0)], //  result of address_to_domain
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_verifier_data"),
-            ),
-            calldata: [
-              this.reference(index * nbInstructions + 1, 0), // result of domain_to_id
-              this.hardcoded(shortString.encodeShortString("nft_pp_contract")),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-          {
-            execution: this.staticExecution(),
-            to: this.hardcoded(identityContract),
-            selector: this.hardcoded(
-              hash.getSelectorFromName("get_extended_verifier_data"),
-            ),
-            calldata: [
-              this.reference(index * nbInstructions + 1, 0), // result of domain_to_id
-              this.hardcoded(shortString.encodeShortString("nft_pp_id")),
-              this.hardcoded("2"),
-              this.hardcoded(pfpVerifierContract),
-              this.hardcoded("0"),
-            ],
-          },
-        );
-
-        // we only fetch the uri if the nft_pp_contract is not 0
-        uriCalldata.push({
-          execution: this.notEqual(index * nbInstructions + 2, 0, 0), // result of nft_pp_contract
-          to: this.reference(index * nbInstructions + 2, 0),
-          selector: this.hardcoded(hash.getSelectorFromName("tokenURI")),
-          calldata: [
-            this.reference(index * nbInstructions + 3, 1),
-            this.reference(index * nbInstructions + 3, 2),
-          ],
-        });
-      });
-
-      const data = await multicallContract.call("aggregate", [
-        [...calldata, ...uriCalldata],
-      ]);
+      const data = await executeMulticallWithFallback(
+        multicallContract,
+        "aggregate",
+        initialCalldata,
+        fallbackCalldata,
+      );
 
       if (Array.isArray(data)) {
         let results: StarkProfile[] = [];
@@ -702,22 +590,25 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           const name = decodeDomain(callResult[i * nbInstructions].slice(1));
           const nftContract = callResult[i * nbInstructions + 2][0];
 
-          const profilePictureMetadata =
-            nftContract !== BigInt(0)
-              ? uriResult[uriIndex]
-                  .slice(1)
-                  .map((val: BigInt) =>
-                    shortString.decodeShortString(val.toString()),
-                  )
-                  .join("")
-              : undefined;
-          if (nftContract !== BigInt(0)) uriIndex++;
+          const hasPfp =
+            nftContract !== BigInt(0) &&
+            nftContract !== BigInt(blobbertContract);
+
+          const profilePictureMetadata = hasPfp
+            ? uriResult[uriIndex]
+                .slice(1)
+                .map((val: BigInt) =>
+                  shortString.decodeShortString(val.toString()),
+                )
+                .join("")
+            : undefined;
+          if (hasPfp) uriIndex++;
 
           // extract nft_image from profile picture metadata
           const profilePicture = profilePictureMetadata
             ? profilePictureMetadata.includes("base64")
-              ? this.parseBase64Image(profilePictureMetadata)
-              : await this.fetchImageUrl(profilePictureMetadata)
+              ? parseBase64Image(profilePictureMetadata)
+              : await fetchImageUrl(profilePictureMetadata)
             : useDefaultPfp
             ? `https://starknet.id/api/identicons/${callResult[
                 i * nbInstructions + 1
@@ -769,62 +660,5 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     } else {
       throw new Error("Invalid idDomainOrAddr argument");
     }
-  }
-
-  private hardcoded = (arg: string | number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      Hardcoded: arg,
-    });
-  };
-
-  private reference = (call: number, pos: number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      Reference: cairo.tuple(call, pos),
-    });
-  };
-
-  private arrayReference = (call: number, pos: number): CairoCustomEnum => {
-    return new CairoCustomEnum({
-      ArrayReference: cairo.tuple(call, pos),
-    });
-  };
-
-  private staticExecution = () => {
-    return new CairoCustomEnum({
-      Static: {},
-    });
-  };
-
-  private notEqual = (call: number, pos: number, value: number) => {
-    return new CairoCustomEnum({
-      IfNotEqual: cairo.tuple(call, pos, value),
-    });
-  };
-
-  private async fetchImageUrl(url: string): Promise<string | undefined> {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      // Check if the "image" key exists and is not null
-      if (data.image) {
-        return data.image;
-      } else {
-        console.error("Image is not set");
-        return undefined;
-      }
-    } catch (error) {
-      console.error("There was a problem fetching the image URL:", error);
-      return undefined;
-    }
-  }
-
-  private parseBase64Image(metadata: string): string {
-    return JSON.parse(atob(metadata.split(",")[1].slice(0, -1))).image;
   }
 }
