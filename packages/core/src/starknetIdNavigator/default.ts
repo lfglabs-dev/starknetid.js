@@ -24,7 +24,7 @@ import {
   getMulticallContract,
 } from "../utils";
 import { StarknetIdNavigatorInterface } from "./interface";
-import { StarkProfile, StarknetIdContracts } from "../types";
+import { DecodedData, StarkProfile, StarknetIdContracts } from "../types";
 
 export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   public provider: ProviderInterface;
@@ -55,29 +55,33 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (error instanceof Error) {
         // extract server uri from error message
         const data = this.extractArrayFromErrorMessage(String(error));
-        if (!data?.includes("offchain_resolving")) {
+        if (!data || data?.errorType !== "offchain_resolving") {
           // if the error is not related to offchain resolving
           throw new Error("Could not get address from stark name");
         }
-        const uri = data.slice(1).join("");
 
-        // Query server
-        try {
-          const serverRes = await this.queryServer(uri, domain);
-          if (serverRes.error) {
-            throw new Error("Could not resolve domain");
+        // we try querying the server for each uri, and will stop once one is working
+        for (const uri of data.uris) {
+          try {
+            const serverRes = await this.queryServer(uri, data.domain_slice);
+            if (serverRes.error) {
+              continue;
+            }
+            // try resolving with hint
+            const hint: any[] = [
+              serverRes.data.address,
+              serverRes.data.r,
+              serverRes.data.s,
+              serverRes.data.max_validity,
+            ];
+            return await this.tryResolveDomain(contract, encodedDomain, hint);
+          } catch (error: any) {
+            throw new Error(
+              `Could not resolve domain on URI ${uri} : ${error.message}`,
+            );
           }
-          // try resolving with hint
-          const hint: any[] = [
-            serverRes.data.address,
-            serverRes.data.r,
-            serverRes.data.s,
-            serverRes.data.max_validity,
-          ];
-          return await this.tryResolveDomain(contract, encodedDomain, hint);
-        } catch (error: any) {
-          throw new Error(`Could not resolve domain : ${error.message}`);
         }
+        throw new Error("Could not get address from stark name");
       } else {
         throw new Error("Could not get address from stark name");
       }
@@ -645,13 +649,48 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       const res = values.map((entry) => {
         const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
         if (hexMatch && hexMatch[1]) {
-          return shortString.decodeShortString(hexMatch[1]);
+          return hexMatch[1];
         }
       });
-      return res;
+      return this.decodeErrorMsg(res as string[]);
     }
 
     return null;
+  }
+
+  private decodeErrorMsg(array: string[]): DecodedData | null {
+    try {
+      let index = 0;
+      const result: DecodedData = {
+        errorType: shortString.decodeShortString(array[index++]),
+        domain_slice: "",
+        uris: [],
+      };
+
+      // Decode domain
+      const domainSize: number = parseInt(array[index++], 16);
+      for (let i = 0; i < domainSize; i++) {
+        result.domain_slice += decodeDomain([BigInt(array[index++])]).replace(
+          ".stark",
+          "",
+        );
+        if (i < domainSize - 1) result.domain_slice += ".";
+      }
+
+      // Decode URIs
+      while (index < array.length) {
+        let uriSize = parseInt(array[index++], 16);
+        let uri = "";
+        for (let i = 0; i < uriSize; i++) {
+          uri += shortString.decodeShortString(array[index++]);
+        }
+        result.uris.push(uri);
+      }
+      return result;
+    } catch (error) {
+      console.error("Error decoding array:", error);
+      return null;
+    }
   }
 
   private async checkArguments(idDomainOrAddr: string): Promise<string> {

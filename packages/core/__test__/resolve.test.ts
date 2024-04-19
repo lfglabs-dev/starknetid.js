@@ -75,7 +75,7 @@ describe("test starknetid.js sdk", () => {
       {
         contract: compiledResolverSierra,
         casm: compiledResolverSierraCasm,
-        constructorCalldata: [publicKey, 2, ...serverUri],
+        constructorCalldata: [account.address, publicKey],
       },
       { maxFee: 1e18 },
     );
@@ -110,6 +110,11 @@ describe("test starknetid.js sdk", () => {
           contractAddress: IdentityContract,
           entrypoint: "set_main_id",
           calldata: ["1"],
+        },
+        {
+          contractAddress: ResolverContract,
+          entrypoint: "add_uri",
+          calldata: [2, ...serverUri],
         },
       ],
       undefined,
@@ -147,6 +152,41 @@ describe("test starknetid.js sdk", () => {
         "iris.test.stark",
       );
       expect(address).toBe(account.address);
+    });
+
+    test("resolve root domain returns the right address", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const address = await starknetIdNavigator.getAddressFromStarkName(
+        "test.stark",
+      );
+      expect(address).toBe(account.address);
+    });
+
+    test("resolve subdomain that is not registered returns an error", async () => {
+      fetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Domain not found" }),
+      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      await expect(
+        starknetIdNavigator.getAddressFromStarkName("notworking.test.stark"),
+      ).rejects.toThrow("Could not get address from stark name");
     });
   });
 });
