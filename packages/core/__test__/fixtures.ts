@@ -65,6 +65,12 @@ export const compiledMulticallSierra = readContractSierra(
 export const compiledMulticallSierraCasm = readContractSierraCasm(
   "multicall/multicall",
 );
+export const compiledUtilsMulticallSierra = readContractSierra(
+  "utils_multicall/utils_multicall",
+);
+export const compiledUtilsMulticallSierraCasm = readContractSierraCasm(
+  "utils_multicall/utils_multicall",
+);
 export const compiledErc721Sierra = readContractSierra("erc721/erc721");
 export const compiledErc721SierraCasm = readContractSierraCasm("erc721/erc721");
 export const compiledResolverSierra = readContractSierra("resolver/resolver");
