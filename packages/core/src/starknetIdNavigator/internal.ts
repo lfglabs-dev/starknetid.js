@@ -8,6 +8,8 @@ import {
   hash,
   shortString,
 } from "starknet";
+import { DecodedData } from "~/types";
+import { utils } from "..";
 
 //
 // profile util functions
@@ -353,4 +355,75 @@ export const getProfileDataCalldata = (
   fallbackCalldata.push(...calls);
 
   return { initialCalldata, fallbackCalldata };
+};
+
+//
+// CCIP util functions
+//
+
+export const extractArrayFromErrorMessage = (errorMsg: string) => {
+  const pattern = /Execution failed\. Failure reason: \((.*?)\)\./;
+  const match = errorMsg.match(pattern);
+
+  if (match && match[1]) {
+    const values = match[1].split(",").map((value) => value.trim());
+    const res = values.map((entry) => {
+      const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
+      if (hexMatch && hexMatch[1]) {
+        return hexMatch[1];
+      }
+    });
+    return decodeErrorMsg(res as string[]);
+  }
+
+  return null;
+};
+
+export const decodeErrorMsg = (array: string[]): DecodedData | null => {
+  try {
+    let index = 0;
+    const result: DecodedData = {
+      errorType: shortString.decodeShortString(array[index++]),
+      domain_slice: "",
+      uris: [],
+    };
+
+    // Decode domain
+    const domainSize: number = parseInt(array[index++], 16);
+    for (let i = 0; i < domainSize; i++) {
+      result.domain_slice += utils
+        .decodeDomain([BigInt(array[index++])])
+        .replace(".stark", "");
+      if (i < domainSize - 1) result.domain_slice += ".";
+    }
+
+    // Decode URIs
+    while (index < array.length) {
+      let uriSize = parseInt(array[index++], 16);
+      let uri = "";
+      for (let i = 0; i < uriSize; i++) {
+        uri += shortString.decodeShortString(array[index++]);
+      }
+      result.uris.push(uri);
+    }
+    return result;
+  } catch (error) {
+    console.error("Error decoding array:", error);
+    return null;
+  }
+};
+
+export const queryServer = async (serverUri: string, domain: string) => {
+  try {
+    const response = await fetch(`${serverUri}${domain}`);
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(errorResponse || "Error while querying server");
+    }
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    return { error };
+  }
 };

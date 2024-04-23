@@ -24,6 +24,7 @@ import {
 } from "../src/utils";
 
 jest.mock("../src/utils");
+global.fetch = jest.fn();
 
 describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
@@ -263,6 +264,10 @@ describe("test starknetid.js sdk", () => {
   });
 
   describe("getProfileData with nft profile picture", () => {
+    beforeEach(() => {
+      fetch.mockClear();
+    });
+
     beforeAll(async () => {
       // Add nft pp verifier data
       const { transaction_hash } = await otherAccount.execute(
@@ -297,6 +302,12 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("getProfileData should return the right values", async () => {
+      fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          image: "https://sepolia.starknet.quest/starkfighter/level1.webp",
+        }),
+      });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_GOERLI,
