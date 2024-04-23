@@ -9,8 +9,8 @@ describe("test starknetid.js sdk on mainnet", () => {
     },
   });
 
-  describe("getProfileData for a profile with a blobert pfp", () => {
-    test("getProfileData should return an undefined profile picture url", async () => {
+  describe("test getProfileData with different collections", () => {
+    test("getProfileData should return a blobert pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_MAIN,
@@ -49,7 +49,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         discord: "662387807901188096",
         proofOfPersonhood: true,
         profilePicture:
-          "https://img.starkurabu.com/41538374869489910341448844649168906.png",
+          "https://img.starkurabu.com/41538374869489910341448844649168896.png",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
@@ -73,6 +73,108 @@ describe("test starknetid.js sdk on mainnet", () => {
           "https://api.briq.construction/v1/preview/starknet-mainnet-dojo/0x6cff01dd5d1e2ec5e792d66bd6edae386bd022b4ffd993c76c08cd000000003.png",
       };
       expect(profile).toStrictEqual(expectedProfile);
+    });
+
+    test("getProfileData on an address with no identity", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_MAIN,
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profile = await starknetIdNavigator.getProfileData(
+        "0x0302de76464d4e2447F2d1831fb0A1AF101B18F80964fCfff1aD831C0A92e1fD",
+      );
+      const expectedProfile = {
+        name: "",
+        twitter: undefined,
+        github: undefined,
+        discord: undefined,
+        proofOfPersonhood: false,
+        profilePicture: "https://starknet.id/api/identicons/0",
+      };
+      expect(profile).toStrictEqual(expectedProfile);
+    });
+
+    test("getProfileData on undeployed account", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_MAIN,
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profile = await starknetIdNavigator.getProfileData(
+        "0x0097095403155fcbFA72AA53270D6eDd0DCC830bBb9264455517DF3e508633E5",
+      );
+      const expectedProfile = {
+        name: "",
+        twitter: undefined,
+        github: undefined,
+        discord: undefined,
+        proofOfPersonhood: false,
+        profilePicture: "https://starknet.id/api/identicons/0",
+      };
+      expect(profile).toStrictEqual(expectedProfile);
+    });
+  });
+
+  describe("getStarkNames on mainnet", () => {
+    test("getStarkNames", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_MAIN,
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const names = await starknetIdNavigator.getStarkNames([
+        "0x029b96adaefdb4299be95cdee599bff6bcca26c4e85a4d8ace79231f4618017f",
+        "0x016Ed7556bF325417340A188Bf3646cE1ABc91711671344832a2D613FfC7cF49", // undeployed account
+        "0x061b6c0a78f9edf13cea17b50719f3344533fadd470b8cb29c2b4318014f52d3",
+        "0x0302de76464d4e2447F2d1831fb0A1AF101B18F80964fCfff1aD831C0A92e1fD", // address without a stark name
+        "0x06fb5e4e650bb6ceb80923c008e81122129092efc7e6d6f3f5c9ac4eead25355",
+      ]);
+      const expectedNames = [
+        "iris.stark",
+        "",
+        "fricoben.stark",
+        "",
+        "rmz.stark",
+      ];
+      expect(names).toStrictEqual(expectedNames);
+    });
+  });
+
+  describe("getStarkProfiles on mainnet", () => {
+    test("getStarkProfiles with existing profiles", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_MAIN,
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profiles = await starknetIdNavigator.getStarkProfiles([
+        "0x029b96adaefdb4299be95cdee599bff6bcca26c4e85a4d8ace79231f4618017f", //duck
+        "0x06fb5e4e650bb6ceb80923c008e81122129092efc7e6d6f3f5c9ac4eead25355", // blobbert
+        "0x061b6c0a78f9edf13cea17b50719f3344533fadd470b8cb29c2b4318014f52d3", // starkurabu
+        "0x0097095403155fcbFA72AA53270D6eDd0DCC830bBb9264455517DF3e508633E5", // nothing
+      ]);
+      const expectedProfile = [
+        {
+          name: "iris.stark",
+          profilePicture:
+            "https://api.briq.construction/v1/preview/starknet-mainnet-dojo/0x6cff01dd5d1e2ec5e792d66bd6edae386bd022b4ffd993c76c08cd000000003.png",
+        },
+        {
+          name: "rmz.stark",
+          profilePicture: "https://starknet.id/api/identicons/891050699740",
+        },
+        {
+          name: "fricoben.stark",
+          profilePicture:
+            "https://img.starkurabu.com/41538374869489910341448844649168896.png",
+        },
+        {
+          name: undefined,
+          profilePicture: "https://starknet.id/api/identicons/0",
+        },
+      ];
+      expect(profiles).toStrictEqual(expectedProfile);
     });
   });
 });
