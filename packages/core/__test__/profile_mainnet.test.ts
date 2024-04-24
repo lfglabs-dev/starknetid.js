@@ -167,7 +167,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         {
           name: "fricoben.stark",
           profilePicture:
-            "https://img.starkurabu.com/41538374869489910341448844649168896.png",
+            "https://img.starkurabu.com/41538374869489910341448844649168906.png",
         },
         {
           name: undefined,
