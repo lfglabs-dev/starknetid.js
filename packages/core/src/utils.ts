@@ -241,6 +241,42 @@ export function getMulticallContract(
   }
 }
 
+export function getBlobbertContract(
+  chainId: constants.StarknetChainId,
+): string {
+  switch (chainId) {
+    case constants.StarknetChainId.SN_MAIN:
+      return "0x00539f522b29ae9251dbf7443c7a950cf260372e69efab3710a11bf17a9599f1";
+    default:
+      return "0";
+  }
+}
+
+/**
+ * Get starknet.id multicall contract address from chainId
+ * @param StarknetChainId
+ * @returns string
+ */
+export function getUtilsMulticallContract(
+  chainId: constants.StarknetChainId,
+): string {
+  const utilsMulticallContract =
+    "0x004a50c8a8bc97eaaa947e8cbde481beaf5d6c38b4ac89da31ebdddb547d13d7";
+
+  switch (chainId) {
+    case constants.StarknetChainId.SN_MAIN:
+      return utilsMulticallContract;
+
+    case constants.StarknetChainId.SN_SEPOLIA:
+      return utilsMulticallContract;
+
+    default:
+      throw new Error(
+        "Starknet.id utils multicall contract is not yet deployed on this network",
+      );
+  }
+}
+
 function extractStars(str: string): [string, number] {
   let k = 0;
   while (str.endsWith(bigAlphabet[bigAlphabet.length - 1])) {

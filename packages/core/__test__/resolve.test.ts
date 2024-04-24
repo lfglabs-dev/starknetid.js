@@ -76,7 +76,7 @@ describe("test starknetid.js sdk", () => {
       {
         contract: compiledResolverSierra,
         casm: compiledResolverSierraCasm,
-        constructorCalldata: [publicKey, 2, ...serverUri],
+        constructorCalldata: [account.address, publicKey],
       },
       { maxFee: 1e18 },
     );
@@ -106,6 +106,18 @@ describe("test starknetid.js sdk", () => {
             0,
             0,
           ],
+        },
+        // add uri to resolver contract
+        {
+          contractAddress: ResolverContract,
+          entrypoint: "add_uri",
+          calldata: [2, ...serverUri],
+        },
+        // set_domain_to_resolver
+        {
+          contractAddress: NamingContract,
+          entrypoint: "set_domain_to_resolver",
+          calldata: [1, 1068731, ResolverContract],
         },
       ],
       undefined,
@@ -144,6 +156,41 @@ describe("test starknetid.js sdk", () => {
       );
       expect(address).toBe(account.address);
     });
+
+    test("resolve root domain returns the right address", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const address = await starknetIdNavigator.getAddressFromStarkName(
+        "test.stark",
+      );
+      expect(address).toBe(account.address);
+    });
+
+    test("resolve subdomain that is not registered returns an error", async () => {
+      fetch.mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Domain not found" }),
+      });
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_GOERLI,
+        {
+          naming: NamingContract,
+          identity: IdentityContract,
+        },
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      await expect(
+        starknetIdNavigator.getAddressFromStarkName("notworking.test.stark"),
+      ).rejects.toThrow("Could not get address from stark name");
+    });
   });
 
   describe("Try reverse resolving a domain without set_address_to_domain ", () => {
@@ -173,7 +220,7 @@ describe("test starknetid.js sdk", () => {
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       await expect(
         starknetIdNavigator.getStarkName(account.address),
-      ).rejects.toThrow("Could not get stark name from address");
+      ).rejects.toThrow("Could not get stark name");
     });
   });
 

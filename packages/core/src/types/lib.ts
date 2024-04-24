@@ -20,3 +20,9 @@ export type CcipResponse = {
   s: string;
   max_validity: number;
 };
+
+export type DecodedData = {
+  errorType: string;
+  domain_slice: string;
+  uris: string[];
+};

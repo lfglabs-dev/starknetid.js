@@ -169,4 +169,23 @@ export abstract class StarknetIdNavigatorInterface {
     pfp_verifier?: string,
     pop_verifier?: string,
   ): Promise<StarkProfile>;
+
+  /**
+   * Get users starkname and profile picture url from a list of addresses
+   * If no verifier is provided, it will use the starknet.id verifiers contract addresses
+   * If no NFT is set as profile picture it will return the starknetid pfp url for this address. To disable this behavior, set the useDefaultPfp parameter to false.
+   *
+   * @param addresses (string[])
+   * @param useDefaultPfp boolean to return the default starknetid url if no profile picture is set (optional)
+   * @param pfp_verifier contract address for profile picture (optional)
+   * @returns StarkProfile[] containing name and profilePicture
+   * If the address does'nt have a starkname, it will return undefined for the name.
+   * If the address does'nt have a profile picture, it will return the starknetid pfp url
+   * for this address if useDefaultPfp is enabled, undefined otherwise.
+   */
+  public abstract getStarkProfiles(
+    addresses: string[],
+    useDefaultPfp?: boolean,
+    pfp_verifier?: string,
+  ): Promise<StarkProfile[]>;
 }
