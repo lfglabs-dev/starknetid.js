@@ -49,7 +49,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         discord: "662387807901188096",
         proofOfPersonhood: true,
         profilePicture:
-          "https://img.starkurabu.com/41538374869489910341448844649168896.png",
+          "https://img.starkurabu.com/41538374869489910341448844649168906.png",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
