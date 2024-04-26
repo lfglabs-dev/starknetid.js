@@ -7,7 +7,6 @@ import {
   constants,
   CallData,
   Contract,
-  Call,
 } from "starknet";
 import {
   decodeDomain,
@@ -26,7 +25,6 @@ import { StarknetIdNavigatorInterface } from "./interface";
 import { StarkProfile, StarknetIdContracts } from "../types";
 import {
   executeMulticallWithFallback,
-  executeWithFallback,
   extractArrayFromErrorMessage,
   fetchImageUrl,
   getProfileDataCalldata,
@@ -106,7 +104,6 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       return await this.tryResolveAddress(contract, address);
     } catch (error) {
       if (error instanceof Error) {
-        console.log("error", error);
         // extract server uri from error message
         const data = extractArrayFromErrorMessage(String(error));
         if (!data || data?.errorType !== "offchain_resolving") {
@@ -140,44 +137,6 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         throw new Error("Could not get stark name");
       }
     }
-  }
-
-  private async tryResolveAddress(
-    contract: string,
-    address: string,
-    hint: any = [],
-  ): Promise<string> {
-    const calldata: Call = {
-      contractAddress: contract,
-      entrypoint: "address_to_domain",
-      calldata: CallData.compile({
-        address: address,
-        hint,
-      }),
-    };
-    const fallbackCalldata: Call = {
-      contractAddress: contract,
-      entrypoint: "address_to_domain",
-      calldata: CallData.compile({
-        address: address,
-      }),
-    };
-
-    const domainData = await executeWithFallback(
-      this.provider,
-      calldata,
-      fallbackCalldata,
-    );
-
-    const decimalDomain = domainData.result
-      .map((element) => BigInt(element))
-      .slice(1);
-    const stringDomain = decodeDomain(decimalDomain);
-
-    if (!stringDomain) {
-      throw new Error("Could not get stark name");
-    }
-    return stringDomain;
   }
 
   public async getStarkNames(
@@ -704,6 +663,31 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       calldata: CallData.compile({ domain: encodedDomain, hint }),
     });
     return addressData.result[0];
+  }
+
+  private async tryResolveAddress(
+    contract: string,
+    address: string,
+    hint: any = [],
+  ): Promise<string> {
+    const domainData = await this.provider.callContract({
+      contractAddress: contract,
+      entrypoint: "address_to_domain",
+      calldata: CallData.compile({
+        address: address,
+        hint,
+      }),
+    });
+
+    const decimalDomain = domainData.result
+      .map((element) => BigInt(element))
+      .slice(1);
+    const stringDomain = decodeDomain(decimalDomain);
+
+    if (!stringDomain) {
+      throw new Error("Could not get stark name");
+    }
+    return stringDomain;
   }
 
   private async checkArguments(idDomainOrAddr: string): Promise<string> {

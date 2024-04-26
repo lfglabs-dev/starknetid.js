@@ -1,8 +1,6 @@
 import {
   CairoCustomEnum,
-  Call,
   Contract,
-  ProviderInterface,
   RawArgsArray,
   cairo,
   hash,
@@ -38,24 +36,6 @@ export const fetchImageUrl = async (url: string): Promise<string> => {
   } catch (error) {
     console.error("There was a problem fetching the image URL:", error);
     return "Error fetching data";
-  }
-};
-
-export const executeWithFallback = async (
-  provider: ProviderInterface,
-  initialCall: Call,
-  fallbackCall: Call,
-) => {
-  try {
-    // Attempt the initial call
-    return await provider.callContract(initialCall);
-  } catch (initialError) {
-    // If the initial call fails, try with the fallback calldata
-    try {
-      return await provider.callContract(fallbackCall);
-    } catch (fallbackError) {
-      throw fallbackError; // Re-throw to handle outside
-    }
   }
 };
 
