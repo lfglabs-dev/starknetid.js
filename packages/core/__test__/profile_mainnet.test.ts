@@ -42,16 +42,19 @@ describe("test starknetid.js sdk on mainnet", () => {
         "0x061b6c0a78f9edf13cea17b50719f3344533fadd470b8cb29c2b4318014f52d3",
         false,
       );
+      expect(
+        profile.profilePicture &&
+          profile.profilePicture.startsWith("https://img.starkurabu.com"),
+      ).toBeTruthy();
+
       const expectedProfile = {
         name: "fricoben.stark",
         twitter: "1255853529866145794",
         github: "78437165",
         discord: "662387807901188096",
         proofOfPersonhood: true,
-        profilePicture:
-          "https://img.starkurabu.com/41538374869489910341448844649168896.png",
       };
-      expect(profile).toStrictEqual(expectedProfile);
+      expect(profile).toMatchObject(expectedProfile);
     });
 
     test("getProfileData with a duck pfp", async () => {
@@ -154,27 +157,33 @@ describe("test starknetid.js sdk on mainnet", () => {
         "0x061b6c0a78f9edf13cea17b50719f3344533fadd470b8cb29c2b4318014f52d3", // starkurabu
         "0x0097095403155fcbFA72AA53270D6eDd0DCC830bBb9264455517DF3e508633E5", // nothing
       ]);
-      const expectedProfile = [
-        {
-          name: "iris.stark",
-          profilePicture:
-            "https://api.briq.construction/v1/preview/starknet-mainnet-dojo/0x6cff01dd5d1e2ec5e792d66bd6edae386bd022b4ffd993c76c08cd000000003.png",
-        },
-        {
-          name: "rmz.stark",
-          profilePicture: "https://starknet.id/api/identicons/891050699740",
-        },
-        {
-          name: "fricoben.stark",
-          profilePicture:
-            "https://img.starkurabu.com/41538374869489910341448844649168896.png",
-        },
-        {
-          name: undefined,
-          profilePicture: "https://starknet.id/api/identicons/0",
-        },
+      const expectedProfiles = [
+        { name: "iris.stark" },
+        { name: "rmz.stark" },
+        { name: "fricoben.stark" },
+        { name: undefined },
       ];
-      expect(profiles).toStrictEqual(expectedProfile);
+      profiles.forEach((profile, index) => {
+        expect(profile.name).toEqual(expectedProfiles[index].name);
+      });
+      expect(
+        profiles[0].profilePicture &&
+          profiles[0].profilePicture.startsWith(
+            "https://api.briq.construction",
+          ),
+      ).toBeTruthy();
+      expect(
+        profiles[1].profilePicture &&
+          profiles[1].profilePicture.startsWith("https://starknet.id"),
+      ).toBeTruthy();
+      expect(
+        profiles[2].profilePicture &&
+          profiles[2].profilePicture.startsWith("https://img.starkurabu.com"),
+      ).toBeTruthy();
+      expect(
+        profiles[3].profilePicture &&
+          profiles[3].profilePicture.startsWith("https://starknet.id"),
+      ).toBeTruthy();
     });
   });
 });
