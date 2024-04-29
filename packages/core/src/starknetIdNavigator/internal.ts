@@ -19,9 +19,15 @@ export const parseBase64Image = (metadata: string): string => {
   return JSON.parse(atob(metadata.split(",")[1].slice(0, -1))).image;
 };
 
+export const parseImageUrl = (url: string): string => {
+  return url.startsWith("ipfs://")
+    ? url.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/")
+    : url;
+};
+
 export const fetchImageUrl = async (url: string): Promise<string> => {
   try {
-    const response = await fetch(url);
+    const response = await fetch(parseImageUrl(url));
 
     if (!response.ok) {
       throw new Error("Network response was not ok");
@@ -31,7 +37,7 @@ export const fetchImageUrl = async (url: string): Promise<string> => {
 
     // Check if the "image" key exists and is not null
     if (data.image) {
-      return data.image;
+      return parseImageUrl(data.image);
     } else {
       return "Image is not set";
     }
