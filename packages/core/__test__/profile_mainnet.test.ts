@@ -216,33 +216,6 @@ describe("test starknetid.js sdk on mainnet", () => {
             "https://gateway.pinata.cloud/ipfs/",
           ),
       ).toBeTruthy();
-
-      // const expectedProfile = [
-      //   {
-      //     name: "iris.stark",
-      //     profilePicture:
-      //       "https://api.briq.construction/v1/preview/starknet-mainnet-dojo/0x6cff01dd5d1e2ec5e792d66bd6edae386bd022b4ffd993c76c08cd000000003.png",
-      //   },
-      //   {
-      //     name: "rmz.stark",
-      //     profilePicture: "https://starknet.id/api/identicons/891050699740",
-      //   },
-      //   {
-      //     name: "fricoben.stark",
-      //     profilePicture:
-      //       "https://img.starkurabu.com/41538374869489910341448844649168906.png",
-      //   },
-      //   {
-      //     name: undefined,
-      //     profilePicture: "https://starknet.id/api/identicons/0",
-      //   },
-      //   {
-      //     name: "rob.cacango.stark",
-      //     profilePicture:
-      //       "https://gateway.pinata.cloud/ipfs/QmZS7maV678eJW7wJaVXJc28aKXzdZrwS1hmBmSy6bUVJh/1925.jpg",
-      //   },
-      // ];
-      // expect(profiles).toStrictEqual(expectedProfile);
     });
   });
 });
