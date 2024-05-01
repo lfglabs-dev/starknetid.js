@@ -46,7 +46,6 @@ describe("test starknetid.js sdk on mainnet", () => {
         profile.profilePicture &&
           profile.profilePicture.startsWith("https://img.starkurabu.com"),
       ).toBeTruthy();
-
       const expectedProfile = {
         name: "fricoben.stark",
         twitter: "1255853529866145794",
@@ -74,6 +73,27 @@ describe("test starknetid.js sdk on mainnet", () => {
         proofOfPersonhood: false,
         profilePicture:
           "https://api.briq.construction/v1/preview/starknet-mainnet-dojo/0x6cff01dd5d1e2ec5e792d66bd6edae386bd022b4ffd993c76c08cd000000003.png",
+      };
+      expect(profile).toStrictEqual(expectedProfile);
+    });
+
+    test("getProfileData with a everai pfp", async () => {
+      const starknetIdNavigator = new StarknetIdNavigator(
+        provider,
+        constants.StarknetChainId.SN_MAIN,
+      );
+      expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+      const profile = await starknetIdNavigator.getProfileData(
+        "0x007b275f7524f39b99a51c7134bc44204fedc5dd1e982e920eb2047c6c2a71f0",
+      );
+      const expectedProfile = {
+        name: "rob.cacango.stark",
+        twitter: undefined,
+        github: undefined,
+        discord: undefined,
+        proofOfPersonhood: false,
+        profilePicture:
+          "https://gateway.pinata.cloud/ipfs/QmZS7maV678eJW7wJaVXJc28aKXzdZrwS1hmBmSy6bUVJh/1925.jpg",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
@@ -156,16 +176,21 @@ describe("test starknetid.js sdk on mainnet", () => {
         "0x06fb5e4e650bb6ceb80923c008e81122129092efc7e6d6f3f5c9ac4eead25355", // blobbert
         "0x061b6c0a78f9edf13cea17b50719f3344533fadd470b8cb29c2b4318014f52d3", // starkurabu
         "0x0097095403155fcbFA72AA53270D6eDd0DCC830bBb9264455517DF3e508633E5", // nothing
+        "0x007b275f7524f39b99a51c7134bc44204fedc5dd1e982e920eb2047c6c2a71f0", // everai pfp
       ]);
+      console.log("profiles", profiles);
       const expectedProfiles = [
         { name: "iris.stark" },
         { name: "rmz.stark" },
         { name: "fricoben.stark" },
         { name: undefined },
+        { name: "rob.cacango.stark" },
       ];
+
       profiles.forEach((profile, index) => {
         expect(profile.name).toEqual(expectedProfiles[index].name);
       });
+
       expect(
         profiles[0].profilePicture &&
           profiles[0].profilePicture.startsWith(
@@ -183,6 +208,12 @@ describe("test starknetid.js sdk on mainnet", () => {
       expect(
         profiles[3].profilePicture &&
           profiles[3].profilePicture.startsWith("https://starknet.id"),
+      ).toBeTruthy();
+      expect(
+        profiles[4].profilePicture &&
+          profiles[4].profilePicture.startsWith(
+            "https://gateway.pinata.cloud/ipfs/",
+          ),
       ).toBeTruthy();
     });
   });
