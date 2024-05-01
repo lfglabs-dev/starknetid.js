@@ -24,7 +24,6 @@ import {
 import { StarknetIdNavigatorInterface } from "./interface";
 import { StarkProfile, StarknetIdContracts } from "../types";
 import {
-  executeMulticallWithFallback,
   extractArrayFromErrorMessage,
   fetchImageUrl,
   getProfileDataCalldata,
@@ -160,17 +159,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      let { initialCalldata, fallbackCalldata } = getStarknamesCalldata(
-        addresses,
-        namingContract,
-      );
-
-      const data = await executeMulticallWithFallback(
-        contract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      let calldata = getStarknamesCalldata(addresses, namingContract);
+      const data = await contract.call("aggregate", [calldata]);
 
       let result: string[] = [];
       if (Array.isArray(data)) {
@@ -492,7 +482,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      const { initialCalldata, fallbackCalldata } = getProfileDataCalldata(
+      const calldata = getProfileDataCalldata(
         address,
         namingContract,
         identityContract,
@@ -500,12 +490,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         pfpVerifierContract,
         popVerifierContract,
       );
-      const data = await executeMulticallWithFallback(
-        multicallContract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      const data = await multicallContract.call("aggregate", [calldata]);
 
       if (Array.isArray(data)) {
         const name = decodeDomain(data[0].slice(1));
@@ -584,7 +569,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
     try {
       const nbInstructions = 5;
-      const { initialCalldata, fallbackCalldata } = getStarkProfilesCalldata(
+      const calldata = getStarkProfilesCalldata(
         addresses,
         namingContract,
         identityContract,
@@ -593,12 +578,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         blobbertContract,
       );
 
-      const data = await executeMulticallWithFallback(
-        multicallContract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      const data = await multicallContract.call("aggregate", [calldata]);
 
       if (Array.isArray(data)) {
         let results: StarkProfile[] = [];

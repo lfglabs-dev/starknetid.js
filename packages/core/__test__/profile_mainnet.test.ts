@@ -178,7 +178,6 @@ describe("test starknetid.js sdk on mainnet", () => {
         "0x0097095403155fcbFA72AA53270D6eDd0DCC830bBb9264455517DF3e508633E5", // nothing
         "0x007b275f7524f39b99a51c7134bc44204fedc5dd1e982e920eb2047c6c2a71f0", // everai pfp
       ]);
-      console.log("profiles", profiles);
       const expectedProfiles = [
         { name: "iris.stark" },
         { name: "rmz.stark" },
