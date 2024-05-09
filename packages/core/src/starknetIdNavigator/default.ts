@@ -7,7 +7,6 @@ import {
   constants,
   CallData,
   Contract,
-  Call,
 } from "starknet";
 import {
   decodeDomain,
@@ -25,8 +24,6 @@ import {
 import { StarknetIdNavigatorInterface } from "./interface";
 import { StarkProfile, StarknetIdContracts } from "../types";
 import {
-  executeMulticallWithFallback,
-  executeWithFallback,
   extractArrayFromErrorMessage,
   fetchImageUrl,
   getProfileDataCalldata,
@@ -103,39 +100,41 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
 
     try {
-      // todo: remove fallback when naming contract is updated on mainnet
-      const calldata: Call = {
-        contractAddress: contract,
-        entrypoint: "address_to_domain",
-        calldata: CallData.compile({
-          address: address,
-          hint: [],
-        }),
-      };
-      const fallbackCalldata: Call = {
-        contractAddress: contract,
-        entrypoint: "address_to_domain",
-        calldata: CallData.compile({
-          address: address,
-        }),
-      };
-      const hexDomain = await executeWithFallback(
-        this.provider,
-        calldata,
-        fallbackCalldata,
-      );
-      const decimalDomain = hexDomain.result
-        .map((element) => BigInt(element))
-        .slice(1);
-      const stringDomain = decodeDomain(decimalDomain);
+      return await this.tryResolveAddress(contract, address);
+    } catch (error) {
+      if (error instanceof Error) {
+        // extract server uri from error message
+        const data = extractArrayFromErrorMessage(String(error));
+        if (!data || data?.errorType !== "offchain_resolving") {
+          // if the error is not related to offchain resolving
+          throw new Error("Could not get stark name");
+        }
 
-      if (!stringDomain) {
+        // we try querying the server for each uri, and will stop once one is working
+        for (const uri of data.uris) {
+          try {
+            const serverRes = await queryServer(uri, data.domain_slice);
+            if (serverRes.error) {
+              continue;
+            }
+            // try resolving with hint
+            const hint: any[] = [
+              serverRes.data.address,
+              serverRes.data.r,
+              serverRes.data.s,
+              serverRes.data.max_validity,
+            ];
+            return await this.tryResolveAddress(contract, address, hint);
+          } catch (error: any) {
+            throw new Error(
+              `Could not resolve domain on URI ${uri} : ${error.message}`,
+            );
+          }
+        }
+        throw new Error("Could not get stark name");
+      } else {
         throw new Error("Could not get stark name");
       }
-
-      return stringDomain;
-    } catch (e) {
-      throw new Error("Could not get stark name");
     }
   }
 
@@ -160,17 +159,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      let { initialCalldata, fallbackCalldata } = getStarknamesCalldata(
-        addresses,
-        namingContract,
-      );
-
-      const data = await executeMulticallWithFallback(
-        contract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      let calldata = getStarknamesCalldata(addresses, namingContract);
+      const data = await contract.call("aggregate", [calldata]);
 
       let result: string[] = [];
       if (Array.isArray(data)) {
@@ -492,7 +482,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     );
 
     try {
-      const { initialCalldata, fallbackCalldata } = getProfileDataCalldata(
+      const calldata = getProfileDataCalldata(
         address,
         namingContract,
         identityContract,
@@ -500,12 +490,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         pfpVerifierContract,
         popVerifierContract,
       );
-      const data = await executeMulticallWithFallback(
-        multicallContract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      const data = await multicallContract.call("aggregate", [calldata]);
 
       if (Array.isArray(data)) {
         const name = decodeDomain(data[0].slice(1));
@@ -584,7 +569,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
     try {
       const nbInstructions = 5;
-      const { initialCalldata, fallbackCalldata } = getStarkProfilesCalldata(
+      const calldata = getStarkProfilesCalldata(
         addresses,
         namingContract,
         identityContract,
@@ -593,12 +578,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         blobbertContract,
       );
 
-      const data = await executeMulticallWithFallback(
-        multicallContract,
-        "aggregate",
-        initialCalldata,
-        fallbackCalldata,
-      );
+      const data = await multicallContract.call("aggregate", [calldata]);
 
       if (Array.isArray(data)) {
         let results: StarkProfile[] = [];
@@ -663,6 +643,31 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       calldata: CallData.compile({ domain: encodedDomain, hint }),
     });
     return addressData.result[0];
+  }
+
+  private async tryResolveAddress(
+    contract: string,
+    address: string,
+    hint: any = [],
+  ): Promise<string> {
+    const domainData = await this.provider.callContract({
+      contractAddress: contract,
+      entrypoint: "address_to_domain",
+      calldata: CallData.compile({
+        address: address,
+        hint,
+      }),
+    });
+
+    const decimalDomain = domainData.result
+      .map((element) => BigInt(element))
+      .slice(1);
+    const stringDomain = decodeDomain(decimalDomain);
+
+    if (!stringDomain) {
+      throw new Error("Could not get stark name");
+    }
+    return stringDomain;
   }
 
   private async checkArguments(idDomainOrAddr: string): Promise<string> {

@@ -1,8 +1,6 @@
 import {
   CairoCustomEnum,
-  Call,
   Contract,
-  ProviderInterface,
   RawArgsArray,
   cairo,
   hash,
@@ -47,24 +45,6 @@ export const fetchImageUrl = async (url: string): Promise<string> => {
   }
 };
 
-export const executeWithFallback = async (
-  provider: ProviderInterface,
-  initialCall: Call,
-  fallbackCall: Call,
-) => {
-  try {
-    // Attempt the initial call
-    return await provider.callContract(initialCall);
-  } catch (initialError) {
-    // If the initial call fails, try with the fallback calldata
-    try {
-      return await provider.callContract(fallbackCall);
-    } catch (fallbackError) {
-      throw fallbackError; // Re-throw to handle outside
-    }
-  }
-};
-
 //
 // composable multicall util functions
 //
@@ -99,24 +79,24 @@ export const notEqual = (call: number, pos: number, value: number) => {
   });
 };
 
-export const executeMulticallWithFallback = async (
-  contract: Contract,
-  functionName: string,
-  initialCalldata: RawArgsArray,
-  fallbackCalldata: RawArgsArray,
-) => {
-  try {
-    // Attempt the initial call
-    return await contract.call(functionName, [initialCalldata]);
-  } catch (initialError) {
-    // If the initial call fails, try with the fallback calldata
-    try {
-      return await contract.call(functionName, [fallbackCalldata]);
-    } catch (fallbackError) {
-      throw fallbackError; // Re-throw to handle outside
-    }
-  }
-};
+// export const executeMulticallWithFallback = async (
+//   contract: Contract,
+//   functionName: string,
+//   initialCalldata: RawArgsArray,
+//   fallbackCalldata: RawArgsArray,
+// ) => {
+//   try {
+//     // Attempt the initial call
+//     return await contract.call(functionName, [initialCalldata]);
+//   } catch (initialError) {
+//     // If the initial call fails, try with the fallback calldata
+//     try {
+//       return await contract.call(functionName, [fallbackCalldata]);
+//     } catch (fallbackError) {
+//       throw fallbackError; // Re-throw to handle outside
+//     }
+//   }
+// };
 
 //
 // composable multicall calldata
@@ -125,29 +105,19 @@ export const executeMulticallWithFallback = async (
 export const getStarknamesCalldata = (
   addresses: string[],
   namingContract: string,
-): {
-  initialCalldata: RawArgsArray;
-  fallbackCalldata: RawArgsArray;
-} => {
-  let initialCalldata: RawArgsArray = [];
-  let fallbackCalldata: RawArgsArray = [];
+): RawArgsArray => {
+  let calldata: RawArgsArray = [];
+
   addresses.forEach((address) => {
-    initialCalldata.push({
+    calldata.push({
       execution: staticExecution(),
       to: hardcoded(namingContract),
       selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
       calldata: [hardcoded(address), hardcoded("0")],
     });
-
-    fallbackCalldata.push({
-      execution: staticExecution(),
-      to: hardcoded(namingContract),
-      selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
-      calldata: [hardcoded(address)],
-    });
   });
 
-  return { initialCalldata, fallbackCalldata };
+  return calldata;
 };
 
 export const getStarkProfilesCalldata = (
@@ -157,32 +127,19 @@ export const getStarkProfilesCalldata = (
   pfpVerifierContract: string,
   utilsMulticallContract: string,
   blobbertContract: string,
-): {
-  initialCalldata: RawArgsArray;
-  fallbackCalldata: RawArgsArray;
-} => {
+): RawArgsArray => {
   let calldata: RawArgsArray = [];
   let uriCalldata: RawArgsArray = [];
-  let fallback: RawArgsArray = [];
   const nbInstructions = 5;
 
   addresses.forEach((address, index) => {
-    // We will first try to pass a hint
-    calldata.push({
-      execution: staticExecution(),
-      to: hardcoded(namingContract),
-      selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
-      calldata: [hardcoded(address), hardcoded("0")],
-    });
-    // if it fails we will fallback to not passing it
-    fallback.push({
-      execution: staticExecution(),
-      to: hardcoded(namingContract),
-      selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
-      calldata: [hardcoded(address)],
-    });
-
-    const calls = [
+    calldata.push(
+      {
+        execution: staticExecution(),
+        to: hardcoded(namingContract),
+        selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
+        calldata: [hardcoded(address), hardcoded("0")],
+      },
       {
         execution: staticExecution(),
         to: hardcoded(namingContract),
@@ -223,9 +180,7 @@ export const getStarkProfilesCalldata = (
           hardcoded(blobbertContract),
         ],
       },
-    ];
-    calldata.push(...calls);
-    fallback.push(...calls);
+    );
 
     // we only fetch the uri if the nft_pp_contract is not 0 and is not the blobbert contract
     // we will handle blobbert token uris offchain
@@ -240,10 +195,7 @@ export const getStarkProfilesCalldata = (
     });
   });
 
-  return {
-    initialCalldata: [...calldata, ...uriCalldata],
-    fallbackCalldata: [...fallback, ...uriCalldata],
-  };
+  return [...calldata, ...uriCalldata];
 };
 
 export const getProfileDataCalldata = (
@@ -253,27 +205,16 @@ export const getProfileDataCalldata = (
   verifierContract: string,
   pfpVerifierContract: string,
   popVerifierContract: string,
-): {
-  initialCalldata: RawArgsArray;
-  fallbackCalldata: RawArgsArray;
-} => {
-  let initialCalldata: RawArgsArray = [];
-  let fallbackCalldata: RawArgsArray = [];
+): RawArgsArray => {
+  let calldata: RawArgsArray = [];
 
-  initialCalldata.push({
-    execution: staticExecution(),
-    to: hardcoded(namingContract),
-    selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
-    calldata: [hardcoded(address), hardcoded("0")],
-  });
-  fallbackCalldata.push({
-    execution: staticExecution(),
-    to: hardcoded(namingContract),
-    selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
-    calldata: [hardcoded(address)],
-  });
-
-  const calls = [
+  calldata.push(
+    {
+      execution: staticExecution(),
+      to: hardcoded(namingContract),
+      selector: hardcoded(hash.getSelectorFromName("address_to_domain")),
+      calldata: [hardcoded(address), hardcoded("0")],
+    },
     {
       execution: staticExecution(),
       to: hardcoded(namingContract),
@@ -356,11 +297,9 @@ export const getProfileDataCalldata = (
       selector: hardcoded(hash.getSelectorFromName("tokenURI")),
       calldata: [reference(7, 1), reference(7, 2)],
     },
-  ];
-  initialCalldata.push(...calls);
-  fallbackCalldata.push(...calls);
+  );
 
-  return { initialCalldata, fallbackCalldata };
+  return calldata;
 };
 
 //
