@@ -70,7 +70,7 @@ describe("test starknetid.js sdk", () => {
 
     // Deploy resolver contract
     const publicKey =
-      "0x1ef1ffcd39066b79fd741ed17c8bed5fab0160591d8b7177211f5e7f5517a04";
+      "0x29207854e61b420aba8fbbbfa95b12abfcdfb67881ba811ef39c30d3ae196e9";
     const serverUri = ["http://0.0.0.0:8090/resolve?do", "main="];
     const resolverResponse = await account.declareAndDeploy(
       {
@@ -137,9 +137,9 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0x54d882a3dee9bc4454ef58eddf64c5928a187b8c3f1a9019f7ca2efff916b8c",
+          s: "0x571860187bdd76bd6cf78873e4bf1224b50d158dce4887722cd385d56d0341",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
@@ -204,9 +204,9 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0x54d882a3dee9bc4454ef58eddf64c5928a187b8c3f1a9019f7ca2efff916b8c",
+          s: "0x571860187bdd76bd6cf78873e4bf1224b50d158dce4887722cd385d56d0341",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
@@ -228,9 +228,9 @@ describe("test starknetid.js sdk", () => {
     const serverResponse = {
       address:
         "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-      r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-      s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-      max_validity: 1716966719,
+      r: "0x54d882a3dee9bc4454ef58eddf64c5928a187b8c3f1a9019f7ca2efff916b8c",
+      s: "0x571860187bdd76bd6cf78873e4bf1224b50d158dce4887722cd385d56d0341",
+      max_validity: 2032517912,
     };
     beforeEach(() => {
       fetch.mockClear();
@@ -269,9 +269,9 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0x54d882a3dee9bc4454ef58eddf64c5928a187b8c3f1a9019f7ca2efff916b8c",
+          s: "0x571860187bdd76bd6cf78873e4bf1224b50d158dce4887722cd385d56d0341",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(

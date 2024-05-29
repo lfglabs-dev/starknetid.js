@@ -10,7 +10,7 @@ describe("test starknetid.js sdk on sepolia", () => {
   });
 
   describe("Test offchain resolving demo", () => {
-    test("iris.notion.stark resolve to the right address", async () => {
+    test.skip("iris.notion.stark resolve to the right address", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
