@@ -70,7 +70,7 @@ describe("test starknetid.js sdk", () => {
 
     // Deploy resolver contract
     const publicKey =
-      "0x1ef1ffcd39066b79fd741ed17c8bed5fab0160591d8b7177211f5e7f5517a04";
+      "0x566d69d8c99f62bc71118399bab25c1f03719463eab8d6a444cd11ece131616";
     console.log("addr", account.address);
     const serverUri = ["http://0.0.0.0:8090/resolve?do", "main="];
     const resolverResponse = await account.declareAndDeploy(
