@@ -70,7 +70,8 @@ describe("test starknetid.js sdk", () => {
 
     // Deploy resolver contract
     const publicKey =
-      "0x1ef1ffcd39066b79fd741ed17c8bed5fab0160591d8b7177211f5e7f5517a04";
+      "0x566d69d8c99f62bc71118399bab25c1f03719463eab8d6a444cd11ece131616";
+    console.log("addr", account.address);
     const serverUri = ["http://0.0.0.0:8090/resolve?do", "main="];
     const resolverResponse = await account.declareAndDeploy(
       {
@@ -124,6 +125,7 @@ describe("test starknetid.js sdk", () => {
       { maxFee: 1e18 },
     );
     await provider.waitForTransaction(transaction_hash);
+    console.log("transaction_hash", transaction_hash);
   });
 
   describe("resolve domain", () => {
@@ -137,14 +139,14 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0xe9873c39c55633fef539164defc23faae516b58038cc6f9e46c0c359949203",
+          s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        constants.StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -160,7 +162,7 @@ describe("test starknetid.js sdk", () => {
     test("resolve root domain returns the right address", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        constants.StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -180,7 +182,7 @@ describe("test starknetid.js sdk", () => {
       });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        constants.StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -204,14 +206,14 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0xe9873c39c55633fef539164defc23faae516b58038cc6f9e46c0c359949203",
+          s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        constants.StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -228,9 +230,9 @@ describe("test starknetid.js sdk", () => {
     const serverResponse = {
       address:
         "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-      r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-      s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-      max_validity: 1716966719,
+      r: "0xe9873c39c55633fef539164defc23faae516b58038cc6f9e46c0c359949203",
+      s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
+      max_validity: 2032517912,
     };
     beforeEach(() => {
       fetch.mockClear();
@@ -269,14 +271,14 @@ describe("test starknetid.js sdk", () => {
         json: async () => ({
           address:
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-          r: "0x7bdc9f102e7085464431ae1a89f1d1cc51abf0a1dfa3fba8016b05cb4365219",
-          s: "0x6d557890203c75df13d880691ac8af5323d0cb7c944d34fc271425f442eae9f",
-          max_validity: 1716966719,
+          r: "0xe9873c39c55633fef539164defc23faae516b58038cc6f9e46c0c359949203",
+          s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
+          max_validity: 2032517912,
         }),
       });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        constants.StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
