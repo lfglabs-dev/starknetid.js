@@ -97,7 +97,7 @@ export function getIdentityContract(
   const starknetIdGoerliContract =
     "0x0783a9097b26eae0586373b2ce0ed3529ddc44069d1e0fbc4f66d42b69d6850d";
   const starknetIdSepoliaContract =
-    "0x070DF8B4F5cb2879f8592849fA8f3134da39d25326B8558cc9C8FE8D47EA3A90";
+    "0x3697660a0981d734780731949ecb2b4a38d6a58fc41629ed611e8defda";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
@@ -130,7 +130,7 @@ export function getVerifierContract(
   const starknetIdGoerliContract =
     "0x019e5204152a72891bf8cd0bed8f03593fdb29ceacd14fca587be5d9fcf87c0e";
   const starknetIdSepoliaContract =
-    "0x0182EcE8173C216A395f4828e1523541b7e3600bf190CB252E1a1A0cE219d184";
+    "0x60B94fEDe525f815AE5E8377A463e121C787cCCf3a36358Aa9B18c12c4D566";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
@@ -162,7 +162,7 @@ export function getPfpVerifierContract(
   const starknetIdGoerliContract =
     "0x03cac3228b434259734ee0e4ff445f642206ea11adace7e4f45edd2596748698";
   const starknetIdSepoliaContract =
-    "0x058061bb6bdc501eE215172c9f87d557C1E0f466dC498cA81b18f998Bf1362b2";
+    "0x9e7bdb8dabd02ea8cfc23b1d1c5278e46490f193f87516ed5ff2dfec02";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
@@ -194,7 +194,7 @@ export function getPopVerifierContract(
   const starknetIdGoerliContract =
     "0x03528caf090179e337931ee669a5b0214041e1bae30d460ff07d2cea2c7a9106";
   const starknetIdSepoliaContract =
-    "0x0023FE3b845ed5665a9eb3792bbB17347B490EE4090f855C1298d03BB5F49B49";
+    "0x15ae88ae054caa74090b89025c1595683f12edf7a4ed2ad0274de3e1d4a";
 
   switch (chainId) {
     case constants.StarknetChainId.SN_MAIN:
