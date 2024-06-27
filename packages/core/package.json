@@ -35,7 +35,7 @@
     "vite-plugin-dts": "^2.3.0"
   },
   "peerDependencies": {
-    "starknet": "^5.25.0"
+    "starknet": "^6.9.0"
   },
   "peerDependenciesMeta": {
     "starknet": {
