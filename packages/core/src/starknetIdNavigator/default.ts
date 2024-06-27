@@ -7,7 +7,6 @@ import {
   constants,
   CallData,
   Contract,
-  CallContractResponse,
 } from "starknet";
 import {
   decodeDomain,

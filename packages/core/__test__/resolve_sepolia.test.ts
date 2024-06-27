@@ -1,4 +1,4 @@
-import { Provider, constants } from "starknet";
+import { Provider } from "starknet";
 import { StarknetChainId, StarknetIdNavigator } from "../src";
 
 describe("test starknetid.js sdk on sepolia", () => {
