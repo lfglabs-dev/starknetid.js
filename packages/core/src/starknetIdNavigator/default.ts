@@ -7,6 +7,7 @@ import {
   constants,
   CallData,
   Contract,
+  CallContractResponse,
 } from "starknet";
 import {
   decodeDomain,
@@ -194,7 +195,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           domain: encodedDomain,
         }),
       });
-      return BigInt(starknetId.result[0]).toString();
+
+      return BigInt(starknetId[0]).toString();
     } catch (e) {
       if (e instanceof Error && e.message === "Could not get stark name") {
         throw e;
@@ -221,7 +223,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           domain: "0",
         }),
       });
-      return num.toBigInt(data.result[0]);
+      return num.toBigInt(data[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -251,8 +253,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      data.result.shift();
-      const res = data.result.map((element: string) => {
+      data.shift();
+      const res = data.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -284,8 +286,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      data.result.shift();
-      const res = data.result.map((element: string) => {
+      data.shift();
+      const res = data.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -320,7 +322,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      return num.toBigInt(data.result[0]);
+      return num.toBigInt(data[0]);
     } catch (e) {
       if (e instanceof Error && e.message === "User not found") {
         throw e;
@@ -353,8 +355,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      data.result.shift();
-      const res = data.result.map((element: string) => {
+      data.shift();
+      const res = data.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -389,8 +391,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
         }),
       });
 
-      data.result.shift();
-      const res = data.result.map((element: string) => {
+      data.shift();
+      const res = data.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -423,7 +425,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           domain: "0", // for now we only support domain 0
         }),
       });
-      const nftContract = nftContractData.result.map((element: string) => {
+      const nftContract = nftContractData.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -438,8 +440,8 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           domain: "0", // for now we only support domain 0
         }),
       });
-      nftTokenData.result.shift();
-      const nftTokenId = nftTokenData.result.map((element: string) => {
+      nftTokenData.shift();
+      const nftTokenId = nftTokenData.map((element: string) => {
         return num.toBigInt(element);
       });
 
@@ -642,7 +644,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       entrypoint: "domain_to_address",
       calldata: CallData.compile({ domain: encodedDomain, hint }),
     });
-    return addressData.result[0];
+    return addressData[0];
   }
 
   private async tryResolveAddress(
@@ -659,9 +661,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       }),
     });
 
-    const decimalDomain = domainData.result
-      .map((element) => BigInt(element))
-      .slice(1);
+    const decimalDomain = domainData.map((element) => BigInt(element)).slice(1);
     const stringDomain = decodeDomain(decimalDomain);
 
     if (!stringDomain) {

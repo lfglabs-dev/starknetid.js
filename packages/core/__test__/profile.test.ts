@@ -1,5 +1,5 @@
 import { Account, shortString, constants } from "starknet";
-import { StarknetIdNavigator } from "../src";
+import { StarknetChainId, StarknetIdNavigator } from "../src";
 import {
   compiledErc721Sierra,
   compiledErc721SierraCasm,
@@ -196,7 +196,7 @@ describe("test starknetid.js sdk", () => {
     beforeEach(() => {
       (getMulticallContract as jest.Mock).mockImplementation(
         (chainId: constants.StarknetChainId) => {
-          if (chainId === constants.StarknetChainId.SN_GOERLI) {
+          if (chainId === StarknetChainId.SN_SEPOLIA) {
             return MulticallContract;
           }
         },
@@ -209,7 +209,7 @@ describe("test starknetid.js sdk", () => {
     test("getProfileData should return an undefined profile picture url", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -237,7 +237,7 @@ describe("test starknetid.js sdk", () => {
     test("getProfileData should return an identicon url", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -310,7 +310,7 @@ describe("test starknetid.js sdk", () => {
       });
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -341,21 +341,21 @@ describe("test starknetid.js sdk", () => {
     beforeEach(() => {
       (getMulticallContract as jest.Mock).mockImplementation(
         (chainId: constants.StarknetChainId) => {
-          if (chainId === constants.StarknetChainId.SN_GOERLI) {
+          if (chainId === StarknetChainId.SN_SEPOLIA) {
             return MulticallContract;
           }
         },
       );
       (getUtilsMulticallContract as jest.Mock).mockImplementation(
         (chainId: constants.StarknetChainId) => {
-          if (chainId === constants.StarknetChainId.SN_GOERLI) {
+          if (chainId === StarknetChainId.SN_SEPOLIA) {
             return UtilsMulticallContract;
           }
         },
       );
       (getBlobbertContract as jest.Mock).mockImplementation(
         (chainId: constants.StarknetChainId) => {
-          if (chainId === constants.StarknetChainId.SN_GOERLI) {
+          if (chainId === StarknetChainId.SN_SEPOLIA) {
             return NFTContract2;
           }
         },
@@ -409,7 +409,7 @@ describe("test starknetid.js sdk", () => {
     test("getStarkProfiles with useDefaultPfp enabled", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -442,7 +442,7 @@ describe("test starknetid.js sdk", () => {
     test("getStarkProfiles with useDefaultPfp disabled", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -553,7 +553,7 @@ describe("test starknetid.js sdk", () => {
       test("getStarkProfiles with with an undefined NFT metadata", async () => {
         const starknetIdNavigator = new StarknetIdNavigator(
           provider,
-          constants.StarknetChainId.SN_GOERLI,
+          StarknetChainId.SN_SEPOLIA,
           {
             naming: NamingContract,
             identity: IdentityContract,

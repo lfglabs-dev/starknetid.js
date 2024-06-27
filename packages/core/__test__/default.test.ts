@@ -1,5 +1,5 @@
 import { Account, num, shortString, constants } from "starknet";
-import { StarknetIdNavigator } from "../src";
+import { StarknetChainId, StarknetIdNavigator } from "../src";
 import {
   compiledIdentitySierra,
   compiledIdentitySierraCasm,
@@ -115,7 +115,7 @@ describe("test starknetid.js sdk", () => {
   test("getAddressFromStarkName should return account.address", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -131,7 +131,7 @@ describe("test starknetid.js sdk", () => {
   test("getStarkName should return ben.stark", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -145,7 +145,7 @@ describe("test starknetid.js sdk", () => {
   test("getStarkNames should work", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -163,7 +163,7 @@ describe("test starknetid.js sdk", () => {
   test("getStarkNames with addresses that don't have domains should work", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -185,7 +185,7 @@ describe("test starknetid.js sdk", () => {
   test("getStarknetId should return id 1 for ben.stark", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -199,7 +199,7 @@ describe("test starknetid.js sdk", () => {
   test("Should fail because contractAddress not deployed", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
     );
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
@@ -211,7 +211,7 @@ describe("test starknetid.js sdk", () => {
   test("getAddressFromStarkName should fail because domain does not exist", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -227,7 +227,7 @@ describe("test starknetid.js sdk", () => {
   test("getStarkName should fail because address has no starkname", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,
-      constants.StarknetChainId.SN_GOERLI,
+      StarknetChainId.SN_SEPOLIA,
       {
         naming: NamingContract,
         identity: IdentityContract,
@@ -281,7 +281,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData from id should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           identity: IdentityContract,
           naming: NamingContract,
@@ -298,7 +298,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData from domain should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -318,7 +318,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData from address should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -338,7 +338,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserExtentedData should return user extended data", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -366,7 +366,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserUnboundedData should return user unbounded data", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -394,7 +394,7 @@ describe("test starknetid.js sdk", () => {
     test("Should fail because identity contract not deployed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
@@ -406,7 +406,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData should return 0x0 when id does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -421,7 +421,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserExtentedData should succeed even with wrong lenth", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -452,7 +452,7 @@ describe("test starknetid.js sdk", () => {
     test("getUserData should return 0x0 when field does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -505,7 +505,7 @@ describe("test starknetid.js sdk", () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -526,7 +526,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData from domain should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -547,7 +547,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData from hex address should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -568,7 +568,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierExtendedData should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -598,7 +598,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierUnboundedData should succeed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -627,7 +627,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData should fail because identity contract not deployed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
 
@@ -643,7 +643,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData should return 0x0 in case verifier contract is not deployed", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -661,7 +661,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData should return 0x0 when field in custom verifier contract does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -680,7 +680,7 @@ describe("test starknetid.js sdk", () => {
     test("getVerifierData should return 0x0 when id does not exist", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -736,7 +736,7 @@ describe("test starknetid.js sdk", () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -755,7 +755,7 @@ describe("test starknetid.js sdk", () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
@@ -774,7 +774,7 @@ describe("test starknetid.js sdk", () => {
       expect(otherAccount).toBeInstanceOf(Account);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_GOERLI,
+        StarknetChainId.SN_SEPOLIA,
         {
           naming: NamingContract,
           identity: IdentityContract,
