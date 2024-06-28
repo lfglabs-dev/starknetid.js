@@ -1,6 +1,5 @@
 import {
   CairoCustomEnum,
-  Contract,
   RawArgsArray,
   cairo,
   hash,

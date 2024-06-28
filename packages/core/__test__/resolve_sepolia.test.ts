@@ -1,19 +1,17 @@
-import { Account, Provider, constants } from "starknet";
-import { StarknetIdNavigator } from "../src";
+import { Provider } from "starknet";
+import { StarknetChainId, StarknetIdNavigator } from "../src";
 
 describe("test starknetid.js sdk on sepolia", () => {
   jest.setTimeout(90000000);
   const provider = new Provider({
-    rpc: {
-      nodeUrl: "https://sepolia.rpc.starknet.id",
-    },
+    nodeUrl: "https://sepolia.rpc.starknet.id",
   });
 
   describe("Test offchain resolving demo", () => {
     test.skip("iris.notion.stark resolve to the right address", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_SEPOLIA,
+        StarknetChainId.SN_SEPOLIA,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const address = await starknetIdNavigator.getAddressFromStarkName(

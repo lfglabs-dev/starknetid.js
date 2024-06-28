@@ -1,19 +1,17 @@
 import { constants, Provider } from "starknet";
-import { StarknetIdNavigator } from "../src";
+import { StarknetChainId, StarknetIdNavigator } from "../src";
 
 describe("test starknetid.js sdk on mainnet", () => {
   jest.setTimeout(90000000);
   const provider = new Provider({
-    rpc: {
-      nodeUrl: "https://rpc.starknet.lava.build",
-    },
+    nodeUrl: "https://rpc.starknet.lava.build",
   });
 
   describe("test getProfileData with different collections", () => {
     test("getProfileData should return a blobert pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -35,7 +33,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a starkurabu pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -59,7 +57,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a duck pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -80,7 +78,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a everai pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -101,7 +99,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData on an address with no identity", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -121,7 +119,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData on undeployed account", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -143,7 +141,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getStarkNames", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const names = await starknetIdNavigator.getStarkNames([
@@ -168,7 +166,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getStarkProfiles with existing profiles", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        constants.StarknetChainId.SN_MAIN,
+        StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profiles = await starknetIdNavigator.getStarkProfiles([
