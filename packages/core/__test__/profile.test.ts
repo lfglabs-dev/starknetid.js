@@ -257,7 +257,7 @@ describe("test starknetid.js sdk", () => {
         github: undefined,
         discord: "123",
         proofOfPersonhood: false,
-        profilePicture: "https://starknet.id/api/identicons/1",
+        profilePicture: "https://identicon.starknet.id/1",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
@@ -429,11 +429,11 @@ describe("test starknetid.js sdk", () => {
         },
         {
           name: "test.stark",
-          profilePicture: "https://starknet.id/api/identicons/2",
+          profilePicture: "https://identicon.starknet.id/2",
         },
         {
           name: undefined,
-          profilePicture: "https://starknet.id/api/identicons/0",
+          profilePicture: "https://identicon.starknet.id/0",
         },
       ];
       expect(profiles).toStrictEqual(expectedProfiles);

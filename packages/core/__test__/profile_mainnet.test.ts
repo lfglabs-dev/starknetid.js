@@ -111,7 +111,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         github: undefined,
         discord: undefined,
         proofOfPersonhood: false,
-        profilePicture: "https://starknet.id/api/identicons/0",
+        profilePicture: "https://identicon.starknet.id/0",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
@@ -131,7 +131,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         github: undefined,
         discord: undefined,
         proofOfPersonhood: false,
-        profilePicture: "https://starknet.id/api/identicons/0",
+        profilePicture: "https://identicon.starknet.id/0",
       };
       expect(profile).toStrictEqual(expectedProfile);
     });
