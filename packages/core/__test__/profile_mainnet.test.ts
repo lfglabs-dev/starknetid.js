@@ -196,7 +196,9 @@ describe("test starknetid.js sdk on mainnet", () => {
       ).toBeTruthy();
       expect(
         profiles[1].profilePicture &&
-          profiles[1].profilePicture.startsWith("https://starknet.id"),
+          profiles[1].profilePicture.startsWith(
+            "https://identicon.starknet.id",
+          ),
       ).toBeTruthy();
       expect(
         profiles[2].profilePicture &&
@@ -204,7 +206,9 @@ describe("test starknetid.js sdk on mainnet", () => {
       ).toBeTruthy();
       expect(
         profiles[3].profilePicture &&
-          profiles[3].profilePicture.startsWith("https://starknet.id"),
+          profiles[3].profilePicture.startsWith(
+            "https://identicon.starknet.id",
+          ),
       ).toBeTruthy();
       expect(
         profiles[4].profilePicture &&
