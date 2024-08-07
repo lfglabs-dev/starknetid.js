@@ -520,7 +520,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
             ? parseBase64Image(profilePictureMetadata)
             : await fetchImageUrl(profilePictureMetadata)
           : useDefaultPfp
-          ? `https://starknet.id/api/identicons/${data[1][0].toString()}`
+          ? `https://identicon.starknet.id/${data[1][0].toString()}`
           : undefined;
 
         return {
@@ -611,7 +611,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
               ? parseBase64Image(profilePictureMetadata)
               : await fetchImageUrl(profilePictureMetadata)
             : useDefaultPfp
-            ? `https://starknet.id/api/identicons/${callResult[
+            ? `https://identicon.starknet.id/${callResult[
                 i * nbInstructions + 1
               ][0].toString()}` // result of domain_to_id
             : undefined;
