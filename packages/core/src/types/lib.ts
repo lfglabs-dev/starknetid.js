@@ -26,8 +26,3 @@ export type DecodedData = {
   domain_slice: string;
   uris: string[];
 };
-
-export const StarknetChainId = {
-  SN_MAIN: "0x534e5f4d41494e", // encodeShortString('SN_MAIN'),
-  SN_SEPOLIA: "0x534e5f5345504f4c4941", // encodeShortString('SN_SEPOLIA')
-} as const;
