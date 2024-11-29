@@ -1,5 +1,5 @@
-import { constants, Provider } from "starknet";
-import { StarknetChainId, StarknetIdNavigator } from "../src";
+import { Provider, constants } from "starknet";
+import { StarknetIdNavigator } from "../src";
 
 describe("test starknetid.js sdk on mainnet", () => {
   jest.setTimeout(90000000);
@@ -11,7 +11,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData should return a blobert pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -33,7 +33,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a starkurabu pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -57,7 +57,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a duck pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -78,14 +78,14 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData with a everai pfp", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
         "0x007b275f7524f39b99a51c7134bc44204fedc5dd1e982e920eb2047c6c2a71f0",
       );
       const expectedProfile = {
-        name: "rob.cacango.stark",
+        name: "pragmarob.stark",
         twitter: undefined,
         github: undefined,
         discord: undefined,
@@ -99,7 +99,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData on an address with no identity", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -119,7 +119,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getProfileData on undeployed account", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profile = await starknetIdNavigator.getProfileData(
@@ -141,7 +141,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getStarkNames", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const names = await starknetIdNavigator.getStarkNames([
@@ -166,7 +166,7 @@ describe("test starknetid.js sdk on mainnet", () => {
     test("getStarkProfiles with existing profiles", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_MAIN,
+        constants.StarknetChainId.SN_MAIN,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const profiles = await starknetIdNavigator.getStarkProfiles([
@@ -181,7 +181,7 @@ describe("test starknetid.js sdk on mainnet", () => {
         { name: "rmz.stark" },
         { name: "fricoben.stark" },
         { name: undefined },
-        { name: "rob.cacango.stark" },
+        { name: "pragmarob.stark" },
       ];
 
       profiles.forEach((profile, index) => {

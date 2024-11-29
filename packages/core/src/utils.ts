@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { constants } from "starknet";
 import { ZERO } from "./constants";
-import { StarknetChainId } from "./types";
 
 const basicAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789-";
 const basicSizePlusOne = BigInt(basicAlphabet.length + 1);
@@ -67,10 +66,10 @@ export function getNamingContract(chainId: constants.StarknetChainId): string {
     "0x00000154bc2e1af9260b9e66af0e9c46fc757ff893b3ff6a85718a810baf1474";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return namingdMainnetContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return namingdSepoliaContract;
 
     default:
@@ -94,10 +93,10 @@ export function getIdentityContract(
     "0x3697660a0981d734780731949ecb2b4a38d6a58fc41629ed611e8defda";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return starknetIdSepoliaContract;
 
     default:
@@ -122,10 +121,10 @@ export function getVerifierContract(
     "0x60B94fEDe525f815AE5E8377A463e121C787cCCf3a36358Aa9B18c12c4D566";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return starknetIdSepoliaContract;
 
     default:
@@ -149,10 +148,10 @@ export function getPfpVerifierContract(
     "0x9e7bdb8dabd02ea8cfc23b1d1c5278e46490f193f87516ed5ff2dfec02";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return starknetIdSepoliaContract;
 
     default:
@@ -176,10 +175,10 @@ export function getPopVerifierContract(
     "0x15ae88ae054caa74090b89025c1595683f12edf7a4ed2ad0274de3e1d4a";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return starknetIdMainnetContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return starknetIdSepoliaContract;
 
     default:
@@ -201,10 +200,10 @@ export function getMulticallContract(
     "0x034ffb8f4452df7a613a0210824d6414dbadcddce6c6e19bf4ddc9e22ce5f970";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return multicallContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return multicallContract;
 
     default:
@@ -218,7 +217,7 @@ export function getBlobbertContract(
   chainId: constants.StarknetChainId,
 ): string {
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return "0x00539f522b29ae9251dbf7443c7a950cf260372e69efab3710a11bf17a9599f1";
     default:
       return "0";
@@ -237,10 +236,10 @@ export function getUtilsMulticallContract(
     "0x004a50c8a8bc97eaaa947e8cbde481beaf5d6c38b4ac89da31ebdddb547d13d7";
 
   switch (chainId) {
-    case StarknetChainId.SN_MAIN:
+    case constants.StarknetChainId.SN_MAIN:
       return utilsMulticallContract;
 
-    case StarknetChainId.SN_SEPOLIA:
+    case constants.StarknetChainId.SN_SEPOLIA:
       return utilsMulticallContract;
 
     default:

@@ -1,5 +1,5 @@
-import { Provider } from "starknet";
-import { StarknetChainId, StarknetIdNavigator } from "../src";
+import { Provider, constants } from "starknet";
+import { StarknetIdNavigator } from "../src";
 
 describe("test starknetid.js sdk on sepolia", () => {
   jest.setTimeout(90000000);
@@ -11,7 +11,7 @@ describe("test starknetid.js sdk on sepolia", () => {
     test.skip("iris.notion.stark resolve to the right address", async () => {
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
-        StarknetChainId.SN_SEPOLIA,
+        constants.StarknetChainId.SN_SEPOLIA,
       );
       expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
       const address = await starknetIdNavigator.getAddressFromStarkName(
