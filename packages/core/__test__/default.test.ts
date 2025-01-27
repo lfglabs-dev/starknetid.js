@@ -224,6 +224,21 @@ describe("test starknetid.js sdk", () => {
     expect(address).toBe("0x0");
   });
 
+  test("getAddressFromStarkName should fail because domain is not a stark domain", async () => {
+    const starknetIdNavigator = new StarknetIdNavigator(
+      provider,
+      constants.StarknetChainId.SN_SEPOLIA,
+      {
+        naming: NamingContract,
+        identity: IdentityContract,
+      },
+    );
+    expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
+    await expect(
+      starknetIdNavigator.getAddressFromStarkName("test.eth"),
+    ).rejects.toThrow("Domain is not a .stark domain");
+  });
+
   test("getStarkName should fail because address has no starkname", async () => {
     const starknetIdNavigator = new StarknetIdNavigator(
       provider,

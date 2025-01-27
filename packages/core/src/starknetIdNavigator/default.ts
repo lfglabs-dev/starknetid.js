@@ -52,6 +52,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
+    if (!isStarkDomain(domain)) {
+      throw new Error("Domain is not a .stark domain");
+    }
+
     const contract =
       this.StarknetIdContract.naming ?? getNamingContract(this.chainId);
     const encodedDomain = encodeDomain(domain).map((elem) => elem.toString(10));
