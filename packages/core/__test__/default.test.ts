@@ -236,7 +236,7 @@ describe("test starknetid.js sdk", () => {
     expect(starknetIdNavigator).toBeInstanceOf(StarknetIdNavigator);
     await expect(
       starknetIdNavigator.getAddressFromStarkName("test.eth"),
-    ).rejects.toThrow("Domain is not a .stark domain");
+    ).rejects.toThrow("Invalid domain, must be a valid .stark domain");
   });
 
   test("getStarkName should fail because address has no starkname", async () => {

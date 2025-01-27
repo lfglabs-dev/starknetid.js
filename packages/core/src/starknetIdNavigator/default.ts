@@ -52,8 +52,10 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
-    if (!isStarkDomain(domain)) {
-      throw new Error("Domain is not a .stark domain");
+    const starkName = domain.endsWith(".stark") ? domain : `${domain}.stark`;
+
+    if (!isStarkDomain(starkName)) {
+      throw new Error("Invalid domain, must be a valid .stark domain");
     }
 
     const contract =
