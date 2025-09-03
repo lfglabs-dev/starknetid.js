@@ -1,4 +1,4 @@
-# Starknetid.js
+## Starknetid.js
 
 Starknetid.js is a JavaScript library that facilitates interaction with the
 Starknet.id protocol. Whether you're a dApp developer or a blockchain
