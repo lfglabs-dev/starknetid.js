@@ -24,7 +24,8 @@ import {
 } from "../src/utils";
 
 jest.mock("../src/utils");
-global.fetch = jest.fn();
+const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
@@ -46,94 +47,73 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy(
-      {
-        contract: compiledIdentitySierra,
-        casm: compiledIdentitySierraCasm,
-        constructorCalldata: [account.address, 0],
-      },
-      { maxFee: 1e18 },
-    );
+    const idResponse = await account.declareAndDeploy({
+      contract: compiledIdentitySierra,
+      casm: compiledIdentitySierraCasm,
+      constructorCalldata: [account.address, 0],
+    });
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy(
-      {
-        contract: compiledPricingSierra,
-        casm: compiledPricingSierraCasm,
-        constructorCalldata: [erc20Address],
-      },
-      { maxFee: 1e18 },
-    );
+    const pricingResponse = await account.declareAndDeploy({
+      contract: compiledPricingSierra,
+      casm: compiledPricingSierraCasm,
+      constructorCalldata: [erc20Address],
+    });
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy(
-      {
-        contract: compiledNamingSierra,
-        casm: compiledNamingSierraCasm,
-        constructorCalldata: [
-          IdentityContract,
-          pricingContractAddress,
-          0,
-          account.address,
-        ],
-      },
-      { maxFee: 1e18 },
-    );
+    const namingResponse = await account.declareAndDeploy({
+      contract: compiledNamingSierra,
+      casm: compiledNamingSierraCasm,
+      constructorCalldata: [
+        IdentityContract,
+        pricingContractAddress,
+        0,
+        account.address,
+      ],
+    });
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy multicall contract
-    const multicallResponse = await account.declareAndDeploy(
-      {
-        contract: compiledMulticallSierra,
-        casm: compiledMulticallSierraCasm,
-      },
-      { maxFee: 1e18 },
-    );
+    const multicallResponse = await account.declareAndDeploy({
+      contract: compiledMulticallSierra,
+      casm: compiledMulticallSierraCasm,
+    });
     MulticallContract = multicallResponse.deploy.contract_address;
 
     // Deploy utils multicall contract
-    const utilsMulticallResponse = await account.declareAndDeploy(
-      {
-        contract: compiledUtilsMulticallSierra,
-        casm: compiledUtilsMulticallSierraCasm,
-      },
-      { maxFee: 1e18 },
-    );
+    const utilsMulticallResponse = await account.declareAndDeploy({
+      contract: compiledUtilsMulticallSierra,
+      casm: compiledUtilsMulticallSierraCasm,
+    });
     UtilsMulticallContract = utilsMulticallResponse.deploy.contract_address;
 
     // Deploy erc721 contract
-    const erc721Response = await account.declareAndDeploy(
-      {
-        contract: compiledErc721Sierra,
-        casm: compiledErc721SierraCasm,
-        constructorCalldata: [
-          shortString.encodeShortString("NFT"),
-          shortString.encodeShortString("NFT"),
-          [
-            shortString.encodeShortString("https://sepolia.api.starknet.qu"),
-            shortString.encodeShortString("est/quests/uri?level="),
-          ],
+    const erc721Response = await account.declareAndDeploy({
+      contract: compiledErc721Sierra,
+      casm: compiledErc721SierraCasm,
+      constructorCalldata: [
+        shortString.encodeShortString("NFT"),
+        shortString.encodeShortString("NFT"),
+        [
+          shortString.encodeShortString("https://sepolia.api.starknet.qu"),
+          shortString.encodeShortString("est/quests/uri?level="),
         ],
-      },
-      { maxFee: 1e18 },
-    );
+      ],
+    });
     NFTContract = erc721Response.deploy.contract_address;
 
     // Deploy a second erc721 contract
-    const erc721Response2 = await account.declareAndDeploy(
-      {
-        contract: compiledErc721Sierra,
-        casm: compiledErc721SierraCasm,
-        constructorCalldata: [
-          shortString.encodeShortString("NFT2"),
-          shortString.encodeShortString("NFT2"),
-          [shortString.encodeShortString("A wrong url")],
-        ],
-      },
-      { maxFee: 1e18 },
-    );
+    const erc721Response2 = await account.declareAndDeploy({
+      contract: compiledErc721Sierra,
+      casm: compiledErc721SierraCasm,
+      constructorCalldata: [
+        shortString.encodeShortString("NFT2"),
+        shortString.encodeShortString("NFT2"),
+        [shortString.encodeShortString("A wrong url")],
+      ],
+    });
     NFTContract2 = erc721Response2.deploy.contract_address;
 
     const { transaction_hash } = await account.execute(
@@ -168,7 +148,6 @@ describe("test starknetid.js sdk", () => {
         },
       ],
       undefined,
-      { maxFee: 1e18 },
     );
     await provider.waitForTransaction(transaction_hash);
 
@@ -187,7 +166,6 @@ describe("test starknetid.js sdk", () => {
         },
       ],
       undefined,
-      { maxFee: 1e18 },
     );
     await provider.waitForTransaction(transaction_hash2);
   });
@@ -265,7 +243,7 @@ describe("test starknetid.js sdk", () => {
 
   describe("getProfileData with nft profile picture", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     beforeAll(async () => {
@@ -296,18 +274,17 @@ describe("test starknetid.js sdk", () => {
           },
         ],
         undefined,
-        { maxFee: 1e18 },
       );
       await provider.waitForTransaction(transaction_hash);
     });
 
     test("getProfileData should return the right values", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           image: "https://sepolia.starknet.quest/starkfighter/level1.webp",
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -401,7 +378,6 @@ describe("test starknetid.js sdk", () => {
           },
         ],
         undefined,
-        { maxFee: 1e18 },
       );
       await provider.waitForTransaction(transaction_hash);
     });
@@ -545,7 +521,6 @@ describe("test starknetid.js sdk", () => {
             },
           ],
           undefined,
-          { maxFee: 1e18 },
         );
         await provider.waitForTransaction(transaction_hash);
       });

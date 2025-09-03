@@ -13,7 +13,8 @@ import {
   getTestProvider,
 } from "./fixtures";
 
-global.fetch = jest.fn();
+const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
@@ -31,41 +32,32 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy(
-      {
-        contract: compiledIdentitySierra,
-        casm: compiledIdentitySierraCasm,
-        constructorCalldata: [account.address, 0],
-      },
-      { maxFee: 1e18 },
-    );
+    const idResponse = await account.declareAndDeploy({
+      contract: compiledIdentitySierra,
+      casm: compiledIdentitySierraCasm,
+      constructorCalldata: [account.address, 0],
+    });
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy(
-      {
-        contract: compiledPricingSierra,
-        casm: compiledPricingSierraCasm,
-        constructorCalldata: [erc20Address],
-      },
-      { maxFee: 1e18 },
-    );
+    const pricingResponse = await account.declareAndDeploy({
+      contract: compiledPricingSierra,
+      casm: compiledPricingSierraCasm,
+      constructorCalldata: [erc20Address],
+    });
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy(
-      {
-        contract: compiledNamingSierra,
-        casm: compiledNamingSierraCasm,
-        constructorCalldata: [
-          IdentityContract,
-          pricingContractAddress,
-          0,
-          account.address,
-        ],
-      },
-      { maxFee: 1e18 },
-    );
+    const namingResponse = await account.declareAndDeploy({
+      contract: compiledNamingSierra,
+      casm: compiledNamingSierraCasm,
+      constructorCalldata: [
+        IdentityContract,
+        pricingContractAddress,
+        0,
+        account.address,
+      ],
+    });
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy resolver contract
@@ -73,68 +65,61 @@ describe("test starknetid.js sdk", () => {
       "0x566d69d8c99f62bc71118399bab25c1f03719463eab8d6a444cd11ece131616";
     console.log("addr", account.address);
     const serverUri = ["http://0.0.0.0:8090/resolve?do", "main="];
-    const resolverResponse = await account.declareAndDeploy(
-      {
-        contract: compiledResolverSierra,
-        casm: compiledResolverSierraCasm,
-        constructorCalldata: [account.address, publicKey],
-      },
-      { maxFee: 1e18 },
-    );
+    const resolverResponse = await account.declareAndDeploy({
+      contract: compiledResolverSierra,
+      casm: compiledResolverSierraCasm,
+      constructorCalldata: [account.address, publicKey],
+    });
     ResolverContract = resolverResponse.deploy.contract_address;
 
-    const { transaction_hash } = await account.execute(
-      [
-        {
-          contractAddress: erc20Address,
-          entrypoint: "approve",
-          calldata: [NamingContract, 0, 1], // Price of domain
-        },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "mint",
-          calldata: ["1"], // TokenId
-        },
-        {
-          contractAddress: NamingContract,
-          entrypoint: "buy",
-          calldata: [
-            "1", // Starknet id linked
-            "1068731", // Domain encoded "test"
-            "365", // days
-            ResolverContract, // resolver
-            0, // sponsor
-            0,
-            0,
-          ],
-        },
-        // add uri to resolver contract
-        {
-          contractAddress: ResolverContract,
-          entrypoint: "add_uri",
-          calldata: [2, ...serverUri],
-        },
-        // set_domain_to_resolver
-        {
-          contractAddress: NamingContract,
-          entrypoint: "set_domain_to_resolver",
-          calldata: [1, 1068731, ResolverContract],
-        },
-      ],
-      undefined,
-      { maxFee: 1e18 },
-    );
+    const { transaction_hash } = await account.execute([
+      {
+        contractAddress: erc20Address,
+        entrypoint: "approve",
+        calldata: [NamingContract, 0, 1], // Price of domain
+      },
+      {
+        contractAddress: IdentityContract,
+        entrypoint: "mint",
+        calldata: ["1"], // TokenId
+      },
+      {
+        contractAddress: NamingContract,
+        entrypoint: "buy",
+        calldata: [
+          "1", // Starknet id linked
+          "1068731", // Domain encoded "test"
+          "365", // days
+          ResolverContract, // resolver
+          0, // sponsor
+          0,
+          0,
+        ],
+      },
+      // add uri to resolver contract
+      {
+        contractAddress: ResolverContract,
+        entrypoint: "add_uri",
+        calldata: [2, ...serverUri],
+      },
+      // set_domain_to_resolver
+      {
+        contractAddress: NamingContract,
+        entrypoint: "set_domain_to_resolver",
+        calldata: [1, 1068731, ResolverContract],
+      },
+    ]);
     await provider.waitForTransaction(transaction_hash);
     console.log("transaction_hash", transaction_hash);
   });
 
   describe("resolve domain", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     test("resolve subdomain returns the right address", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -143,7 +128,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -176,10 +161,10 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("resolve subdomain that is not registered returns an error", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: false,
         json: async () => ({ error: "Domain not found" }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -197,11 +182,11 @@ describe("test starknetid.js sdk", () => {
 
   describe("Try reverse resolving a domain without set_address_to_domain ", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     test("resolve address returns an error", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -210,7 +195,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -235,38 +220,34 @@ describe("test starknetid.js sdk", () => {
       max_validity: 2032517912,
     };
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     beforeAll(async () => {
       expect(account).toBeInstanceOf(Account);
-      const { transaction_hash } = await account.execute(
-        [
-          {
-            contractAddress: NamingContract,
-            entrypoint: "set_address_to_domain",
-            calldata: [
-              // iris.test.stark encoded
-              2,
-              999902,
-              1068731,
-              // hints
-              4,
-              serverResponse.address,
-              serverResponse.r,
-              serverResponse.s,
-              serverResponse.max_validity,
-            ],
-          },
-        ],
-        undefined,
-        { maxFee: 1e18 },
-      );
+      const { transaction_hash } = await account.execute([
+        {
+          contractAddress: NamingContract,
+          entrypoint: "set_address_to_domain",
+          calldata: [
+            // iris.test.stark encoded
+            2,
+            999902,
+            1068731,
+            // hints
+            4,
+            serverResponse.address,
+            serverResponse.r,
+            serverResponse.s,
+            serverResponse.max_validity,
+          ],
+        },
+      ]);
       await provider.waitForTransaction(transaction_hash);
     });
 
     test("resolve address returns the subdomain", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -275,7 +256,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
