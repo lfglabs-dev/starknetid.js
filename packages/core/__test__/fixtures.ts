@@ -93,11 +93,6 @@ export const IS_DEVNET_SEQUENCER =
 export const IS_RPC = !!RPC_URL;
 export const IS_SEQUENCER = !RPC_URL;
 
-// Control flag to run localhost devnet-dependent tests.
-// Enable by setting RUN_DEVNET_TESTS=true in the environment when a devnet is available.
-export const SHOULD_RUN_DEVNET_TESTS =
-  process.env.RUN_DEVNET_TESTS === "true" || process.env.RUN_DEVNET_TESTS === "1";
-
 export const getTestProvider = (): ProviderInterface => {
   const provider = new RpcProvider({ nodeUrl: RPC_URL });
   if (IS_LOCALHOST_DEVNET) {
@@ -136,7 +131,7 @@ export const DEVNET_ACCOUNTS = [
 ];
 
 export const getTestAccount = (provider: ProviderInterface) => {
-  return DEVNET_ACCOUNTS.map(({ address, secret }) =>
-    new Account({ provider, address, signer: secret }),
+  return DEVNET_ACCOUNTS.map(
+    ({ address, secret }) => new Account({ provider, address, signer: secret }),
   );
 };

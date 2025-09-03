@@ -11,15 +11,11 @@ import {
   compiledResolverSierraCasm,
   getTestAccount,
   getTestProvider,
-  IS_LOCALHOST_DEVNET,
-  SHOULD_RUN_DEVNET_TESTS,
 } from "./fixtures";
 
 global.fetch = jest.fn();
 
-const maybeDescribe = IS_LOCALHOST_DEVNET && SHOULD_RUN_DEVNET_TESTS ? describe : describe.skip;
-
-maybeDescribe("test starknetid.js sdk", () => {
+describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
   const provider = getTestProvider();
   const account = getTestAccount(provider)[0];
