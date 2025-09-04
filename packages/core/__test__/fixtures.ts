@@ -138,5 +138,6 @@ export const getTestAccount = (provider: ProviderInterface) => {
 
 // Common transaction details to avoid tip calculation issues
 export const TEST_TX_DETAILS = {
-  tip: 0x0n, // Set tip to 0 to avoid automatic tip calculation
+  maxFee: "0x1000000000000000", // Set a reasonable max fee to bypass fee estimation
+  tip: "0x0", // Set tip to 0 to avoid automatic tip calculation
 };
