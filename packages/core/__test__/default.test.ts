@@ -11,6 +11,7 @@ import {
   compiledPricingSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 
 describe("test starknetid.js sdk", () => {
@@ -34,7 +35,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledIdentitySierraCasm,
         constructorCalldata: [account.address, 0],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     IdentityContract = idResponse.deploy.contract_address;
 
@@ -45,7 +46,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledPricingSierraCasm,
         constructorCalldata: [erc20Address],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
@@ -61,7 +62,7 @@ describe("test starknetid.js sdk", () => {
           account.address,
         ],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     NamingContract = namingResponse.deploy.contract_address;
 
@@ -71,7 +72,7 @@ describe("test starknetid.js sdk", () => {
         contract: compiledMulticallSierra,
         casm: compiledMulticallSierraCasm,
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     MulticallContract = multicallResponse.deploy.contract_address;
 
@@ -106,8 +107,7 @@ describe("test starknetid.js sdk", () => {
           calldata: ["1"],
         },
       ],
-      undefined,
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash);
   });
@@ -287,8 +287,7 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(txHash);
     });
@@ -510,8 +509,7 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
@@ -741,8 +739,7 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });

@@ -15,6 +15,7 @@ import {
   compiledUtilsMulticallSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 import {
   getMulticallContract,
@@ -24,7 +25,8 @@ import {
 } from "../src/utils";
 
 jest.mock("../src/utils");
-global.fetch = jest.fn();
+const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
@@ -52,7 +54,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledIdentitySierraCasm,
         constructorCalldata: [account.address, 0],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     IdentityContract = idResponse.deploy.contract_address;
 
@@ -63,7 +65,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledPricingSierraCasm,
         constructorCalldata: [erc20Address],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
@@ -79,7 +81,7 @@ describe("test starknetid.js sdk", () => {
           account.address,
         ],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     NamingContract = namingResponse.deploy.contract_address;
 
@@ -89,7 +91,7 @@ describe("test starknetid.js sdk", () => {
         contract: compiledMulticallSierra,
         casm: compiledMulticallSierraCasm,
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     MulticallContract = multicallResponse.deploy.contract_address;
 
@@ -99,7 +101,7 @@ describe("test starknetid.js sdk", () => {
         contract: compiledUtilsMulticallSierra,
         casm: compiledUtilsMulticallSierraCasm,
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     UtilsMulticallContract = utilsMulticallResponse.deploy.contract_address;
 
@@ -117,7 +119,7 @@ describe("test starknetid.js sdk", () => {
           ],
         ],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     NFTContract = erc721Response.deploy.contract_address;
 
@@ -132,7 +134,7 @@ describe("test starknetid.js sdk", () => {
           [shortString.encodeShortString("A wrong url")],
         ],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     NFTContract2 = erc721Response2.deploy.contract_address;
 
@@ -167,8 +169,7 @@ describe("test starknetid.js sdk", () => {
           calldata: ["1"],
         },
       ],
-      undefined,
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash);
 
@@ -186,8 +187,7 @@ describe("test starknetid.js sdk", () => {
           ],
         },
       ],
-      undefined,
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash2);
   });
@@ -265,7 +265,7 @@ describe("test starknetid.js sdk", () => {
 
   describe("getProfileData with nft profile picture", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     beforeAll(async () => {
@@ -295,19 +295,18 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
 
     test("getProfileData should return the right values", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           image: "https://sepolia.starknet.quest/starkfighter/level1.webp",
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -400,8 +399,7 @@ describe("test starknetid.js sdk", () => {
             calldata: ["2"],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
@@ -544,8 +542,7 @@ describe("test starknetid.js sdk", () => {
               ],
             },
           ],
-          undefined,
-          { maxFee: 1e18 },
+          TEST_TX_DETAILS,
         );
         await provider.waitForTransaction(transaction_hash);
       });

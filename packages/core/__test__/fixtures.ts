@@ -132,6 +132,12 @@ export const DEVNET_ACCOUNTS = [
 
 export const getTestAccount = (provider: ProviderInterface) => {
   return DEVNET_ACCOUNTS.map(
-    ({ address, secret }) => new Account(provider, address, secret),
+    ({ address, secret }) => new Account({ provider, address, signer: secret }),
   );
+};
+
+// Common transaction details to avoid tip calculation issues
+export const TEST_TX_DETAILS = {
+  maxFee: "0x1000000000000000", // Set a reasonable max fee to bypass fee estimation
+  tip: "0x0", // Set tip to 0 to avoid automatic tip calculation
 };

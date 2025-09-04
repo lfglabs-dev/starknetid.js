@@ -7,6 +7,7 @@ import {
   constants,
   CallData,
   Contract,
+  Abi,
 } from "starknet";
 import {
   decodeDomain,
@@ -52,8 +53,18 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
+    // Check if domain already ends with another TLD (like .eth, .com, etc.)
+    if (
+      domain.includes(".") &&
+      !domain.endsWith(".stark") &&
+      !isStarkDomain(domain)
+    ) {
+      throw new Error("Invalid domain, must be a valid .stark domain");
+    }
+
     const starkName = domain.endsWith(".stark") ? domain : `${domain}.stark`;
 
+    // Check if the final domain is valid
     if (!isStarkDomain(starkName)) {
       throw new Error("Invalid domain, must be a valid .stark domain");
     }
@@ -68,7 +79,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (error instanceof Error) {
         // extract server uri from error message
         const data = extractArrayFromErrorMessage(String(error));
-        if (!data || data?.errorType !== "offchain_resolving") {
+        if (
+          !data ||
+          (data?.errorType !== "offchain_resolving" &&
+            data?.errorType !== "offchamn_resolving")
+        ) {
           // if the error is not related to offchain resolving
           throw new Error("Could not get address from stark name");
         }
@@ -81,16 +96,18 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
               continue;
             }
             // try resolving with hint
-            const hint: any[] = [
+            const hint: [string, string, string, number] = [
               serverRes.data.address,
               serverRes.data.r,
               serverRes.data.s,
               serverRes.data.max_validity,
             ];
             return await this.tryResolveDomain(contract, encodedDomain, hint);
-          } catch (error: any) {
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
             throw new Error(
-              `Could not resolve domain on URI ${uri} : ${error.message}`,
+              `Could not resolve domain on URI ${uri} : ${message}`,
             );
           }
         }
@@ -111,7 +128,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (error instanceof Error) {
         // extract server uri from error message
         const data = extractArrayFromErrorMessage(String(error));
-        if (!data || data?.errorType !== "offchain_resolving") {
+        if (
+          !data ||
+          (data?.errorType !== "offchain_resolving" &&
+            data?.errorType !== "offchamn_resolving")
+        ) {
           // if the error is not related to offchain resolving
           throw new Error("Could not get stark name");
         }
@@ -124,16 +145,18 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
               continue;
             }
             // try resolving with hint
-            const hint: any[] = [
+            const hint: [string, string, string, number] = [
               serverRes.data.address,
               serverRes.data.r,
               serverRes.data.s,
               serverRes.data.max_validity,
             ];
             return await this.tryResolveAddress(contract, address, hint);
-          } catch (error: any) {
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
             throw new Error(
-              `Could not resolve domain on URI ${uri} : ${error.message}`,
+              `Could not resolve domain on URI ${uri} : ${message}`,
             );
           }
         }
@@ -158,11 +181,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const { abi: multicallAbi } = await this.provider.getClassAt(
       multicallAddress,
     );
-    const contract = new Contract(
-      multicallAbi,
-      multicallAddress,
-      this.provider,
-    );
+    const contract = new Contract({
+      abi: multicallAbi as Abi,
+      address: multicallAddress,
+      providerOrAccount: this.provider,
+    });
 
     try {
       let calldata = getStarknamesCalldata(addresses, namingContract);
@@ -170,12 +193,14 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
 
       let result: string[] = [];
       if (Array.isArray(data)) {
-        data.forEach((hexDomain: any) => {
-          const decimalDomain = hexDomain
-            .map((element: bigint) => BigInt(element))
-            .slice(1);
-          const stringDomain = decodeDomain(decimalDomain);
-          result.push(stringDomain);
+        data.forEach((hexDomain: unknown) => {
+          if (Array.isArray(hexDomain)) {
+            const decimalDomain = (hexDomain as (string | bigint)[])
+              .map((element) => BigInt(element))
+              .slice(1);
+            const stringDomain = decodeDomain(decimalDomain);
+            result.push(stringDomain);
+          }
         });
       }
 
@@ -482,11 +507,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const { abi: multicallAbi } = await this.provider.getClassAt(
       multicallAddress,
     );
-    const multicallContract = new Contract(
-      multicallAbi,
-      multicallAddress,
-      this.provider,
-    );
+    const multicallContract = new Contract({
+      abi: multicallAbi as Abi,
+      address: multicallAddress,
+      providerOrAccount: this.provider,
+    });
 
     try {
       const calldata = getProfileDataCalldata(
@@ -514,7 +539,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           data.length === 9
             ? data[8]
                 .slice(1)
-                .map((val: BigInt) =>
+                .map((val: bigint) =>
                   shortString.decodeShortString(val.toString()),
                 )
                 .join("")
@@ -568,11 +593,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
     const { abi: multicallAbi } = await this.provider.getClassAt(
       multicallAddress,
     );
-    const multicallContract = new Contract(
-      multicallAbi,
-      multicallAddress,
-      this.provider,
-    );
+    const multicallContract = new Contract({
+      abi: multicallAbi as Abi,
+      address: multicallAddress,
+      providerOrAccount: this.provider,
+    });
 
     try {
       const nbInstructions = 5;
@@ -604,7 +629,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
           const profilePictureMetadata = hasPfp
             ? uriResult[uriIndex]
                 .slice(1)
-                .map((val: BigInt) =>
+                .map((val: bigint) =>
                   shortString.decodeShortString(val.toString()),
                 )
                 .join("")
@@ -642,7 +667,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   private async tryResolveDomain(
     contract: string,
     encodedDomain: string[],
-    hint: any = [],
+    hint: (string | number)[] = [],
   ): Promise<string> {
     const addressData = await this.provider.callContract({
       contractAddress: contract,
@@ -655,7 +680,7 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   private async tryResolveAddress(
     contract: string,
     address: string,
-    hint: any = [],
+    hint: (string | number)[] = [],
   ): Promise<string> {
     const domainData = await this.provider.callContract({
       contractAddress: contract,

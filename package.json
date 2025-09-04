@@ -53,7 +53,7 @@
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0-0",
-    "starknet": "^6.11.0"
+    "starknet": "8.5.2"
   },
   "files": [
     "packages/core/dist",

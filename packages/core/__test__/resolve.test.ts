@@ -11,9 +11,11 @@ import {
   compiledResolverSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 
-global.fetch = jest.fn();
+const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 describe("test starknetid.js sdk", () => {
   jest.setTimeout(90000000);
@@ -37,7 +39,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledIdentitySierraCasm,
         constructorCalldata: [account.address, 0],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     IdentityContract = idResponse.deploy.contract_address;
 
@@ -48,7 +50,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledPricingSierraCasm,
         constructorCalldata: [erc20Address],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
@@ -64,7 +66,7 @@ describe("test starknetid.js sdk", () => {
           account.address,
         ],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     NamingContract = namingResponse.deploy.contract_address;
 
@@ -79,7 +81,7 @@ describe("test starknetid.js sdk", () => {
         casm: compiledResolverSierraCasm,
         constructorCalldata: [account.address, publicKey],
       },
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     ResolverContract = resolverResponse.deploy.contract_address;
 
@@ -121,8 +123,7 @@ describe("test starknetid.js sdk", () => {
           calldata: [1, 1068731, ResolverContract],
         },
       ],
-      undefined,
-      { maxFee: 1e18 },
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash);
     console.log("transaction_hash", transaction_hash);
@@ -130,11 +131,11 @@ describe("test starknetid.js sdk", () => {
 
   describe("resolve domain", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     test("resolve subdomain returns the right address", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -143,7 +144,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -176,10 +177,10 @@ describe("test starknetid.js sdk", () => {
     });
 
     test("resolve subdomain that is not registered returns an error", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: false,
         json: async () => ({ error: "Domain not found" }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -197,11 +198,11 @@ describe("test starknetid.js sdk", () => {
 
   describe("Try reverse resolving a domain without set_address_to_domain ", () => {
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     test("resolve address returns an error", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -210,7 +211,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
@@ -235,7 +236,7 @@ describe("test starknetid.js sdk", () => {
       max_validity: 2032517912,
     };
     beforeEach(() => {
-      fetch.mockClear();
+      mockFetch.mockClear();
     });
 
     beforeAll(async () => {
@@ -259,14 +260,13 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
-        { maxFee: 1e18 },
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
 
     test("resolve address returns the subdomain", async () => {
-      fetch.mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({
           address:
@@ -275,7 +275,7 @@ describe("test starknetid.js sdk", () => {
           s: "0x7cf03f5ac5fa86b1dfed13c8b33c4cc2384d8879b21f361fe192196e787fcf0",
           max_validity: 2032517912,
         }),
-      });
+      } as Response);
       const starknetIdNavigator = new StarknetIdNavigator(
         provider,
         constants.StarknetChainId.SN_SEPOLIA,
