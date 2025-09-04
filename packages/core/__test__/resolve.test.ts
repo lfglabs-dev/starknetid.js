@@ -11,6 +11,7 @@ import {
   compiledResolverSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 
 const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
@@ -32,32 +33,41 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy({
-      contract: compiledIdentitySierra,
-      casm: compiledIdentitySierraCasm,
-      constructorCalldata: [account.address, 0],
-    });
+    const idResponse = await account.declareAndDeploy(
+      {
+        contract: compiledIdentitySierra,
+        casm: compiledIdentitySierraCasm,
+        constructorCalldata: [account.address, 0],
+      },
+      TEST_TX_DETAILS,
+    );
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingSierra,
-      casm: compiledPricingSierraCasm,
-      constructorCalldata: [erc20Address],
-    });
+    const pricingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledPricingSierra,
+        casm: compiledPricingSierraCasm,
+        constructorCalldata: [erc20Address],
+      },
+      TEST_TX_DETAILS,
+    );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingSierra,
-      casm: compiledNamingSierraCasm,
-      constructorCalldata: [
-        IdentityContract,
-        pricingContractAddress,
-        0,
-        account.address,
-      ],
-    });
+    const namingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledNamingSierra,
+        casm: compiledNamingSierraCasm,
+        constructorCalldata: [
+          IdentityContract,
+          pricingContractAddress,
+          0,
+          account.address,
+        ],
+      },
+      TEST_TX_DETAILS,
+    );
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy resolver contract
@@ -65,50 +75,56 @@ describe("test starknetid.js sdk", () => {
       "0x566d69d8c99f62bc71118399bab25c1f03719463eab8d6a444cd11ece131616";
     console.log("addr", account.address);
     const serverUri = ["http://0.0.0.0:8090/resolve?do", "main="];
-    const resolverResponse = await account.declareAndDeploy({
-      contract: compiledResolverSierra,
-      casm: compiledResolverSierraCasm,
-      constructorCalldata: [account.address, publicKey],
-    });
+    const resolverResponse = await account.declareAndDeploy(
+      {
+        contract: compiledResolverSierra,
+        casm: compiledResolverSierraCasm,
+        constructorCalldata: [account.address, publicKey],
+      },
+      TEST_TX_DETAILS,
+    );
     ResolverContract = resolverResponse.deploy.contract_address;
 
-    const { transaction_hash } = await account.execute([
-      {
-        contractAddress: erc20Address,
-        entrypoint: "approve",
-        calldata: [NamingContract, 0, 1], // Price of domain
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "mint",
-        calldata: ["1"], // TokenId
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "buy",
-        calldata: [
-          "1", // Starknet id linked
-          "1068731", // Domain encoded "test"
-          "365", // days
-          ResolverContract, // resolver
-          0, // sponsor
-          0,
-          0,
-        ],
-      },
-      // add uri to resolver contract
-      {
-        contractAddress: ResolverContract,
-        entrypoint: "add_uri",
-        calldata: [2, ...serverUri],
-      },
-      // set_domain_to_resolver
-      {
-        contractAddress: NamingContract,
-        entrypoint: "set_domain_to_resolver",
-        calldata: [1, 1068731, ResolverContract],
-      },
-    ]);
+    const { transaction_hash } = await account.execute(
+      [
+        {
+          contractAddress: erc20Address,
+          entrypoint: "approve",
+          calldata: [NamingContract, 0, 1], // Price of domain
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "mint",
+          calldata: ["1"], // TokenId
+        },
+        {
+          contractAddress: NamingContract,
+          entrypoint: "buy",
+          calldata: [
+            "1", // Starknet id linked
+            "1068731", // Domain encoded "test"
+            "365", // days
+            ResolverContract, // resolver
+            0, // sponsor
+            0,
+            0,
+          ],
+        },
+        // add uri to resolver contract
+        {
+          contractAddress: ResolverContract,
+          entrypoint: "add_uri",
+          calldata: [2, ...serverUri],
+        },
+        // set_domain_to_resolver
+        {
+          contractAddress: NamingContract,
+          entrypoint: "set_domain_to_resolver",
+          calldata: [1, 1068731, ResolverContract],
+        },
+      ],
+      TEST_TX_DETAILS,
+    );
     await provider.waitForTransaction(transaction_hash);
     console.log("transaction_hash", transaction_hash);
   });
@@ -225,24 +241,27 @@ describe("test starknetid.js sdk", () => {
 
     beforeAll(async () => {
       expect(account).toBeInstanceOf(Account);
-      const { transaction_hash } = await account.execute([
-        {
-          contractAddress: NamingContract,
-          entrypoint: "set_address_to_domain",
-          calldata: [
-            // iris.test.stark encoded
-            2,
-            999902,
-            1068731,
-            // hints
-            4,
-            serverResponse.address,
-            serverResponse.r,
-            serverResponse.s,
-            serverResponse.max_validity,
-          ],
-        },
-      ]);
+      const { transaction_hash } = await account.execute(
+        [
+          {
+            contractAddress: NamingContract,
+            entrypoint: "set_address_to_domain",
+            calldata: [
+              // iris.test.stark encoded
+              2,
+              999902,
+              1068731,
+              // hints
+              4,
+              serverResponse.address,
+              serverResponse.r,
+              serverResponse.s,
+              serverResponse.max_validity,
+            ],
+          },
+        ],
+        TEST_TX_DETAILS,
+      );
       await provider.waitForTransaction(transaction_hash);
     });
 

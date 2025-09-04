@@ -11,6 +11,7 @@ import {
   compiledPricingSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 
 describe("test starknetid.js sdk", () => {
@@ -28,71 +29,86 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy({
-      contract: compiledIdentitySierra,
-      casm: compiledIdentitySierraCasm,
-      constructorCalldata: [account.address, 0],
-    });
+    const idResponse = await account.declareAndDeploy(
+      {
+        contract: compiledIdentitySierra,
+        casm: compiledIdentitySierraCasm,
+        constructorCalldata: [account.address, 0],
+      },
+      TEST_TX_DETAILS,
+    );
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingSierra,
-      casm: compiledPricingSierraCasm,
-      constructorCalldata: [erc20Address],
-    });
+    const pricingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledPricingSierra,
+        casm: compiledPricingSierraCasm,
+        constructorCalldata: [erc20Address],
+      },
+      TEST_TX_DETAILS,
+    );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingSierra,
-      casm: compiledNamingSierraCasm,
-      constructorCalldata: [
-        IdentityContract,
-        pricingContractAddress,
-        0,
-        account.address,
-      ],
-    });
+    const namingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledNamingSierra,
+        casm: compiledNamingSierraCasm,
+        constructorCalldata: [
+          IdentityContract,
+          pricingContractAddress,
+          0,
+          account.address,
+        ],
+      },
+      TEST_TX_DETAILS,
+    );
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy multicall contract
-    const multicallResponse = await account.declareAndDeploy({
-      contract: compiledMulticallSierra,
-      casm: compiledMulticallSierraCasm,
-    });
+    const multicallResponse = await account.declareAndDeploy(
+      {
+        contract: compiledMulticallSierra,
+        casm: compiledMulticallSierraCasm,
+      },
+      TEST_TX_DETAILS,
+    );
     MulticallContract = multicallResponse.deploy.contract_address;
 
-    const { transaction_hash } = await account.execute([
-      {
-        contractAddress: erc20Address,
-        entrypoint: "approve",
-        calldata: [NamingContract, 0, 1], // Price of domain
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "mint",
-        calldata: ["1"], // TokenId
-      },
-      {
-        contractAddress: NamingContract,
-        entrypoint: "buy",
-        calldata: [
-          "1", // Starknet id linked
-          "18925", // Domain encoded "ben"
-          "365", // days
-          "0", // resolver
-          0, // sponsor
-          0,
-          0,
-        ],
-      },
-      {
-        contractAddress: IdentityContract,
-        entrypoint: "set_main_id",
-        calldata: ["1"],
-      },
-    ]);
+    const { transaction_hash } = await account.execute(
+      [
+        {
+          contractAddress: erc20Address,
+          entrypoint: "approve",
+          calldata: [NamingContract, 0, 1], // Price of domain
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "mint",
+          calldata: ["1"], // TokenId
+        },
+        {
+          contractAddress: NamingContract,
+          entrypoint: "buy",
+          calldata: [
+            "1", // Starknet id linked
+            "18925", // Domain encoded "ben"
+            "365", // days
+            "0", // resolver
+            0, // sponsor
+            0,
+            0,
+          ],
+        },
+        {
+          contractAddress: IdentityContract,
+          entrypoint: "set_main_id",
+          calldata: ["1"],
+        },
+      ],
+      TEST_TX_DETAILS,
+    );
     await provider.waitForTransaction(transaction_hash);
   });
 
@@ -245,31 +261,34 @@ describe("test starknetid.js sdk", () => {
 
   describe("Retrieve user data", () => {
     beforeAll(async () => {
-      const { transaction_hash: txHash } = await account.execute([
-        {
-          contractAddress: IdentityContract.toLowerCase(),
-          entrypoint: "set_user_data",
-          calldata: [
-            "1",
-            shortString.encodeShortString("discord"),
-            shortString.encodeShortString("test"),
-            0,
-          ],
-        },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_extended_user_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("avatar"), // field
-            "3", // length
-            shortString.encodeShortString("my"), // value
-            shortString.encodeShortString("avatar"),
-            shortString.encodeShortString("url"),
-            0,
-          ],
-        },
-      ]);
+      const { transaction_hash: txHash } = await account.execute(
+        [
+          {
+            contractAddress: IdentityContract.toLowerCase(),
+            entrypoint: "set_user_data",
+            calldata: [
+              "1",
+              shortString.encodeShortString("discord"),
+              shortString.encodeShortString("test"),
+              0,
+            ],
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_extended_user_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("avatar"), // field
+              "3", // length
+              shortString.encodeShortString("my"), // value
+              shortString.encodeShortString("avatar"),
+              shortString.encodeShortString("url"),
+              0,
+            ],
+          },
+        ],
+        TEST_TX_DETAILS,
+      );
       await provider.waitForTransaction(txHash);
     });
 
@@ -464,31 +483,34 @@ describe("test starknetid.js sdk", () => {
     const otherAccount = getTestAccount(provider)[1];
 
     beforeAll(async () => {
-      const { transaction_hash } = await otherAccount.execute([
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("discord"), // field
-            shortString.encodeShortString("test"), // value
-            0,
-          ],
-        },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_extended_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("avatar"), // field
-            "3", // length
-            shortString.encodeShortString("my"), // value
-            shortString.encodeShortString("avatar"),
-            shortString.encodeShortString("url"),
-            0,
-          ],
-        },
-      ]);
+      const { transaction_hash } = await otherAccount.execute(
+        [
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("discord"), // field
+              shortString.encodeShortString("test"), // value
+              0,
+            ],
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_extended_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("avatar"), // field
+              "3", // length
+              shortString.encodeShortString("my"), // value
+              shortString.encodeShortString("avatar"),
+              shortString.encodeShortString("url"),
+              0,
+            ],
+          },
+        ],
+        TEST_TX_DETAILS,
+      );
       await provider.waitForTransaction(transaction_hash);
     });
 
@@ -692,30 +714,33 @@ describe("test starknetid.js sdk", () => {
     const otherAccount = getTestAccount(provider)[1];
 
     beforeAll(async () => {
-      const { transaction_hash } = await otherAccount.execute([
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("nft_pp_contract"), // field
-            123, // value
-            0,
-          ],
-        },
-        {
-          contractAddress: IdentityContract,
-          entrypoint: "set_extended_verifier_data",
-          calldata: [
-            "1", // token_id
-            shortString.encodeShortString("nft_pp_id"), // field
-            "2", // length
-            456,
-            0,
-            0,
-          ],
-        },
-      ]);
+      const { transaction_hash } = await otherAccount.execute(
+        [
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("nft_pp_contract"), // field
+              123, // value
+              0,
+            ],
+          },
+          {
+            contractAddress: IdentityContract,
+            entrypoint: "set_extended_verifier_data",
+            calldata: [
+              "1", // token_id
+              shortString.encodeShortString("nft_pp_id"), // field
+              "2", // length
+              456,
+              0,
+              0,
+            ],
+          },
+        ],
+        TEST_TX_DETAILS,
+      );
       await provider.waitForTransaction(transaction_hash);
     });
 

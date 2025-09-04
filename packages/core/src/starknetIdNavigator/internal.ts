@@ -311,13 +311,31 @@ export const extractArrayFromErrorMessage = (errorMsg: string) => {
 
   if (match && match[1]) {
     const values = match[1].split(",").map((value) => value.trim());
-    const res = values.map((entry) => {
-      const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
-      if (hexMatch && hexMatch[1]) {
-        return hexMatch[1];
-      }
-    });
-    return decodeErrorMsg(res as string[]);
+    const res = values
+      .map((entry) => {
+        const hexMatch = entry.match(/(0x[0-9a-f]+)/i);
+        if (hexMatch && hexMatch[1]) {
+          return hexMatch[1];
+        }
+        return null;
+      })
+      .filter((value): value is string => value !== null);
+    return decodeErrorMsg(res);
+  }
+
+  // Try the new RPC error format
+  try {
+    // Look for the error array in the nested error structure
+    const jsonArrayMatch = errorMsg.match(/"error":"?\[(.*?)\]"?/);
+    if (jsonArrayMatch && jsonArrayMatch[1]) {
+      // Handle escaped quotes in the JSON
+      const cleanedMatch = jsonArrayMatch[1].replace(/\\\"/g, '"');
+      const jsonArray = `[${cleanedMatch}]`;
+      const parsed = JSON.parse(jsonArray);
+      return decodeErrorMsg(parsed);
+    }
+  } catch (e) {
+    // Ignore JSON parsing errors
   }
 
   return null;
@@ -326,6 +344,10 @@ export const extractArrayFromErrorMessage = (errorMsg: string) => {
 export const decodeErrorMsg = (array: string[]): DecodedData | null => {
   try {
     let index = 0;
+    if (index >= array.length || !array[index]) {
+      return null;
+    }
+
     const result: DecodedData = {
       errorType: shortString.decodeShortString(array[index++]),
       domain_slice: "",
@@ -333,19 +355,29 @@ export const decodeErrorMsg = (array: string[]): DecodedData | null => {
     };
 
     // Decode domain
-    const domainSize: number = parseInt(array[index++], 16);
-    for (let i = 0; i < domainSize; i++) {
-      result.domain_slice += utils
-        .decodeDomain([BigInt(array[index++])])
-        .replace(".stark", "");
-      if (i < domainSize - 1) result.domain_slice += ".";
+    if (index >= array.length || !array[index]) {
+      return null;
     }
+    const domainSize: number = parseInt(array[index++], 16);
+    const domainParts: string[] = [];
+    for (let i = 0; i < domainSize; i++) {
+      if (index >= array.length || !array[index]) {
+        return null;
+      }
+      const decodedPart = shortString.decodeShortString(array[index++]);
+      domainParts.push(decodedPart);
+    }
+    result.domain_slice = domainParts.join(".");
 
     // Decode URIs
     while (index < array.length) {
+      if (!array[index]) break;
       let uriSize = parseInt(array[index++], 16);
       let uri = "";
       for (let i = 0; i < uriSize; i++) {
+        if (index >= array.length || !array[index]) {
+          break;
+        }
         uri += shortString.decodeShortString(array[index++]);
       }
       result.uris.push(uri);

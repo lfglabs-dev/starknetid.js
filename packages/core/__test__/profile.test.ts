@@ -15,6 +15,7 @@ import {
   compiledUtilsMulticallSierraCasm,
   getTestAccount,
   getTestProvider,
+  TEST_TX_DETAILS,
 } from "./fixtures";
 import {
   getMulticallContract,
@@ -47,73 +48,94 @@ describe("test starknetid.js sdk", () => {
     expect(account).toBeInstanceOf(Account);
 
     // Deploy Identity contract
-    const idResponse = await account.declareAndDeploy({
-      contract: compiledIdentitySierra,
-      casm: compiledIdentitySierraCasm,
-      constructorCalldata: [account.address, 0],
-    });
+    const idResponse = await account.declareAndDeploy(
+      {
+        contract: compiledIdentitySierra,
+        casm: compiledIdentitySierraCasm,
+        constructorCalldata: [account.address, 0],
+      },
+      TEST_TX_DETAILS,
+    );
     IdentityContract = idResponse.deploy.contract_address;
 
     // Deploy pricing contract
-    const pricingResponse = await account.declareAndDeploy({
-      contract: compiledPricingSierra,
-      casm: compiledPricingSierraCasm,
-      constructorCalldata: [erc20Address],
-    });
+    const pricingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledPricingSierra,
+        casm: compiledPricingSierraCasm,
+        constructorCalldata: [erc20Address],
+      },
+      TEST_TX_DETAILS,
+    );
     const pricingContractAddress = pricingResponse.deploy.contract_address;
 
     // Deploy naming contract
-    const namingResponse = await account.declareAndDeploy({
-      contract: compiledNamingSierra,
-      casm: compiledNamingSierraCasm,
-      constructorCalldata: [
-        IdentityContract,
-        pricingContractAddress,
-        0,
-        account.address,
-      ],
-    });
+    const namingResponse = await account.declareAndDeploy(
+      {
+        contract: compiledNamingSierra,
+        casm: compiledNamingSierraCasm,
+        constructorCalldata: [
+          IdentityContract,
+          pricingContractAddress,
+          0,
+          account.address,
+        ],
+      },
+      TEST_TX_DETAILS,
+    );
     NamingContract = namingResponse.deploy.contract_address;
 
     // Deploy multicall contract
-    const multicallResponse = await account.declareAndDeploy({
-      contract: compiledMulticallSierra,
-      casm: compiledMulticallSierraCasm,
-    });
+    const multicallResponse = await account.declareAndDeploy(
+      {
+        contract: compiledMulticallSierra,
+        casm: compiledMulticallSierraCasm,
+      },
+      TEST_TX_DETAILS,
+    );
     MulticallContract = multicallResponse.deploy.contract_address;
 
     // Deploy utils multicall contract
-    const utilsMulticallResponse = await account.declareAndDeploy({
-      contract: compiledUtilsMulticallSierra,
-      casm: compiledUtilsMulticallSierraCasm,
-    });
+    const utilsMulticallResponse = await account.declareAndDeploy(
+      {
+        contract: compiledUtilsMulticallSierra,
+        casm: compiledUtilsMulticallSierraCasm,
+      },
+      TEST_TX_DETAILS,
+    );
     UtilsMulticallContract = utilsMulticallResponse.deploy.contract_address;
 
     // Deploy erc721 contract
-    const erc721Response = await account.declareAndDeploy({
-      contract: compiledErc721Sierra,
-      casm: compiledErc721SierraCasm,
-      constructorCalldata: [
-        shortString.encodeShortString("NFT"),
-        shortString.encodeShortString("NFT"),
-        [
-          shortString.encodeShortString("https://sepolia.api.starknet.qu"),
-          shortString.encodeShortString("est/quests/uri?level="),
+    const erc721Response = await account.declareAndDeploy(
+      {
+        contract: compiledErc721Sierra,
+        casm: compiledErc721SierraCasm,
+        constructorCalldata: [
+          shortString.encodeShortString("NFT"),
+          shortString.encodeShortString("NFT"),
+          [
+            shortString.encodeShortString("https://sepolia.api.starknet.qu"),
+            shortString.encodeShortString("est/quests/uri?level="),
+          ],
         ],
-      ],
-    });
+      },
+      TEST_TX_DETAILS,
+    );
     NFTContract = erc721Response.deploy.contract_address;
 
     // Deploy a second erc721 contract
-    const erc721Response2 = await account.declareAndDeploy({
-      contract: compiledErc721Sierra,
-      casm: compiledErc721SierraCasm,
-      constructorCalldata: [
-        shortString.encodeShortString("NFT2"),
-        shortString.encodeShortString("NFT2"),
-        [shortString.encodeShortString("A wrong url")],
-      ],
-    });
+    const erc721Response2 = await account.declareAndDeploy(
+      {
+        contract: compiledErc721Sierra,
+        casm: compiledErc721SierraCasm,
+        constructorCalldata: [
+          shortString.encodeShortString("NFT2"),
+          shortString.encodeShortString("NFT2"),
+          [shortString.encodeShortString("A wrong url")],
+        ],
+      },
+      TEST_TX_DETAILS,
+    );
     NFTContract2 = erc721Response2.deploy.contract_address;
 
     const { transaction_hash } = await account.execute(
@@ -147,7 +169,7 @@ describe("test starknetid.js sdk", () => {
           calldata: ["1"],
         },
       ],
-      undefined,
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash);
 
@@ -165,7 +187,7 @@ describe("test starknetid.js sdk", () => {
           ],
         },
       ],
-      undefined,
+      TEST_TX_DETAILS,
     );
     await provider.waitForTransaction(transaction_hash2);
   });
@@ -273,7 +295,7 @@ describe("test starknetid.js sdk", () => {
             ],
           },
         ],
-        undefined,
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
@@ -377,7 +399,7 @@ describe("test starknetid.js sdk", () => {
             calldata: ["2"],
           },
         ],
-        undefined,
+        TEST_TX_DETAILS,
       );
       await provider.waitForTransaction(transaction_hash);
     });
@@ -520,7 +542,7 @@ describe("test starknetid.js sdk", () => {
               ],
             },
           ],
-          undefined,
+          TEST_TX_DETAILS,
         );
         await provider.waitForTransaction(transaction_hash);
       });

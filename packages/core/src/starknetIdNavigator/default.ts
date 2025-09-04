@@ -53,8 +53,18 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
   }
 
   public async getAddressFromStarkName(domain: string): Promise<string> {
+    // Check if domain already ends with another TLD (like .eth, .com, etc.)
+    if (
+      domain.includes(".") &&
+      !domain.endsWith(".stark") &&
+      !isStarkDomain(domain)
+    ) {
+      throw new Error("Invalid domain, must be a valid .stark domain");
+    }
+
     const starkName = domain.endsWith(".stark") ? domain : `${domain}.stark`;
 
+    // Check if the final domain is valid
     if (!isStarkDomain(starkName)) {
       throw new Error("Invalid domain, must be a valid .stark domain");
     }
@@ -69,7 +79,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (error instanceof Error) {
         // extract server uri from error message
         const data = extractArrayFromErrorMessage(String(error));
-        if (!data || data?.errorType !== "offchain_resolving") {
+        if (
+          !data ||
+          (data?.errorType !== "offchain_resolving" &&
+            data?.errorType !== "offchamn_resolving")
+        ) {
           // if the error is not related to offchain resolving
           throw new Error("Could not get address from stark name");
         }
@@ -114,7 +128,11 @@ export class StarknetIdNavigator implements StarknetIdNavigatorInterface {
       if (error instanceof Error) {
         // extract server uri from error message
         const data = extractArrayFromErrorMessage(String(error));
-        if (!data || data?.errorType !== "offchain_resolving") {
+        if (
+          !data ||
+          (data?.errorType !== "offchain_resolving" &&
+            data?.errorType !== "offchamn_resolving")
+        ) {
           // if the error is not related to offchain resolving
           throw new Error("Could not get stark name");
         }
